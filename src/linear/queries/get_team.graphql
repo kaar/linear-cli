@@ -1,0 +1,20 @@
+query Team {
+  team(id: "%s") {
+    id
+    name
+
+    issues {
+      nodes {
+        id
+        title
+        description
+        assignee {
+          id
+          name
+        }
+        createdAt
+        archivedAt
+      }
+    }
+  }
+}
