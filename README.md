@@ -2,6 +2,8 @@
 
 ## Install
 
+Requires `LINEAR_API_KEY`
+
 ```bash
 pipx install git+https://github.com/kaar/linear-cli
 ```
@@ -10,7 +12,6 @@ pipx install git+https://github.com/kaar/linear-cli
 
 ### Install
 ```bash
-
 pipx install -e .
 ```
 

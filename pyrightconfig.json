@@ -1,0 +1,7 @@
+{
+  "include": ["src/*"],
+  "venvPath": ".",
+  "venv": ".venv",
+  "reportMissingImports": true,
+  "executionEnvironments": [],
+}
