@@ -1,20 +1,28 @@
 import os
+from dataclasses import dataclass
+from pathlib import Path
 
 import requests
 
+LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
+QUERY_PATH = Path(__file__).parent / "queries"
 
-def main():
-    LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
-    query = """
-    query Issue {
-      issue(id: "TRA-383") {
-        id
-        title
-        description
-      }
-    }
-    """
+@dataclass
+class Issue:
+    id: str
+    title: str
+    description: str
+
+
+def load_query(filename: str) -> str:
+    file_path = QUERY_PATH / filename
+    with open(file_path, "r") as f:
+        return f.read()
+
+
+def get_issue(issue_id: str) -> Issue:
+    query = (load_query("get_issue.graphql")) % issue_id
 
     response = requests.post(
         "https://api.linear.app/graphql",
@@ -22,15 +30,18 @@ def main():
         json={"query": query},
     )
 
-    print(response.status_code)
-    print(response.json())
-    json_data = response.json()
+    return Issue(**response.json()["data"]["issue"])
 
-    print(json_data["data"]["issue"]["title"])
+
+def main():
+    issue = get_issue("TRA-383")
+    print(issue.id)
+    print(issue.title)
+    print(issue.description)
 
 
 def cli():
-    print("Hello world from cli")
+    main()
 
 
 if __name__ == "__main__":
