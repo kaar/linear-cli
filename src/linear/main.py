@@ -145,6 +145,9 @@ def cli():
     # linear issue list
     # linear issue view <issue_id>
 
+    # Examples:
+    # linear issue view TRA-331
+
     # linear project list
     # linear project view <project_id>
 
