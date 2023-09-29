@@ -1,144 +1,26 @@
 import argparse
-import json
 import os
-from dataclasses import dataclass
-from pathlib import Path
+import webbrowser
 
-import requests
+from . import linear_client
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
-QUERY_PATH = Path(__file__).parent / "queries"
 
 
-@dataclass
-class Assignee:
-    id: str
-    name: str
+def view_issue(issue_id: str, web: bool = False):
+    issue = linear_client.get_issue(issue_id)
+    if web:
+        webbrowser.open(issue.url)
+        return
+
+    print(f"{issue.title}\n")
+    print(f"{issue.description}")
+    print(f"{issue.url}")
 
 
-@dataclass
-class Node:
-    id: str
-    title: str
-    description: str
-    description: str
-    assignee: str
-    createdAt: str
-    archivedAt: str
-
-
-@dataclass
-class Issue:
-    id: str
-    title: str
-    description: str
-
-
-@dataclass
-class Project:
-    id: str
-
-
-@dataclass
-class User:
-    id: str
-    name: str
-    email: str
-
-
-@dataclass
-class Team:
-    id: str
-    name: str
-
-
-def load_query(filename: str) -> str:
-    file_path = QUERY_PATH / filename
-    with open(file_path, "r") as f:
-        return f.read()
-
-
-def graphql_request(query: str) -> dict:
-    response = requests.post(
-        "https://api.linear.app/graphql",
-        headers={"Authorization": LINEAR_API_KEY},
-        json={"query": query},
-    )
-
-    return response.json()
-
-
-def get_issue(issue_id: str) -> Issue:
-    data = graphql_request(load_query("get_issue.graphql") % issue_id)
-    return Issue(**data["data"]["issue"])
-
-
-def get_project(project_id: str) -> Project:
-    data = graphql_request(load_query("get_project.graphql") % project_id)
-    return Project(**data["data"]["project"])
-
-
-def get_me() -> User:
-    data = graphql_request(load_query("get_me.graphql"))
-    return User(**data["data"]["viewer"])
-
-
-def get_teams() -> list[Team]:
-    data = graphql_request(load_query("get_teams.graphql"))
-    return [Team(**team) for team in data["data"]["teams"]["nodes"]]
-
-
-def get_team(team_id: str) -> Team:
-    data = graphql_request(load_query("get_team.graphql") % team_id)
-    print(json.dumps(data, indent=2))
-    return None
-
-
-def main():
-    issue = get_issue("TRA-383")
-    print(issue.id)
-    print(issue.title)
-    print(issue.description)
-
-    me = get_me()
-    print(me.id)
-    print(me.name)
-    print(me.email)
-
-    teams = get_teams()
-
-    for team in teams:
-        # print(team.id)
-        print(team.name)
-
-    trading_team = [team for team in teams if team.name == "Trading"][0]
-
-    team = get_team(trading_team.id)
-
-    print(team)
-
-    # project = get_project()
-    # print(project.id)
-    # print(project.name)
-
-
-def issue_list():
-    query = """
-    query {
-        issues {
-            nodes {
-                id
-                title
-                description
-            }
-        }
-    }
-    """
-
-    response = graphql_request(query)
-
-    for issue in response["data"]["issues"]["nodes"]:
-        print(issue["title"])
+def list_issues():
+    # List issues assigned to me
+    pass
 
 
 def cli():
@@ -147,21 +29,55 @@ def cli():
 
     # Examples:
     # linear issue view TRA-331
-
-    # linear project list
-    # linear project view <project_id>
+    # linear issue view TRA-331 --web
 
     # linear team list
     # linear team view <team_id>
 
     parser = argparse.ArgumentParser(description="Linear CLI")
 
-    parser.add_argument("command", help="The command to run")
+    subparsers = parser.add_subparsers(dest="command")
+
+    issue_parser = subparsers.add_parser("issue")
+    issue_subparsers = issue_parser.add_subparsers(dest="issue_command")
+
+    issue_list_parser = issue_subparsers.add_parser("list")
+    issue_list_parser.add_argument("--project", type=str, help="Project ID")
+
+    issue_view_parser = issue_subparsers.add_parser("view")
+    issue_view_parser.add_argument("issue_id", type=str, help="Issue ID")
+
+    issue_view_parser.add_argument(
+        "--web", action="store_true", help="Open issue in browser"
+    )
+
+    team_parser = subparsers.add_parser("team")
+    team_subparsers = team_parser.add_subparsers(dest="team_command")
+
+    team_list_parser = team_subparsers.add_parser("list")
+
+    team_view_parser = team_subparsers.add_parser("view")
 
     args = parser.parse_args()
 
     if args.command == "issue":
-        issue_list()
+        if args.issue_command == "list":
+            list_issues()
+        elif args.issue_command == "view":
+            view_issue(args.issue_id, web=args.web)
+
+
+def main():
+    client = linear_client.LinearClient(LINEAR_API_KEY)
+    issue = client.get_issue("TRA-383")
+    me = client.get_me()
+    print(f"Hello {me.name}! Your email is {me.email}")
+
+    issue = client.get_issue("TRA-383")
+    print(f"Found issue {issue.title} with description {issue.description}")
+
+    teams = client.get_teams()
+    print(f"Found {len(teams)} teams")
 
 
 if __name__ == "__main__":
