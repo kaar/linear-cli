@@ -10,6 +10,7 @@ packages = [{ include = "linear", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 requests = "^2.31.0"
+colorama = "^0.4.6"
 
 [tool.poetry.scripts]
 linear-cli = "linear.main:cli"

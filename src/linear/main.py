@@ -2,6 +2,8 @@ import argparse
 import os
 import webbrowser
 
+from colorama import Back, Fore, Style, init
+
 from . import linear_client
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
@@ -19,6 +21,31 @@ def view_issue(issue_id: str, web: bool = False):
 
 
 def list_issues():
+    init()
+    client = linear_client.LinearClient(LINEAR_API_KEY)
+    me = client.get_me()
+    in_progress_issues = [
+        issue for issue in me.assigned_issues if issue.state.name == "In Progress"
+    ]
+    for issue in in_progress_issues:
+        # title_color = Fore.GREEN if issue.state.name == "Done" else Fore.RED
+        match issue.state.name:
+            case "Done":
+                status_color = Fore.GREEN
+            case "In Progress":
+                status_color = Fore.YELLOW
+            case _:
+                status_color = Fore.RED
+
+        status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
+
+        print(f"{issue.title} ({status})")
+        print(f"{issue.description}")
+        print()
+        print(f"{issue.url}")
+
+
+def view_user():
     # List issues assigned to me
     pass
 
