@@ -3,21 +3,62 @@ import os
 import webbrowser
 from collections import defaultdict
 
-from colorama import Back, Fore, Style, init
+from colorama import Fore, Style, init
 
 import linear
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
 
-def print_issue(issue: linear.Issue):
-    print(f"{issue.title}\n")
-    print(f"{issue.description}")
-    print(f"{issue.url}")
+def print_description(description: str):
+    # Trim any starting \n\
+    description = description.replace("\n\\", "\n")
+    print(description)
+
+
+def print_issue(issue: linear.Issue, show_description: bool = False):
+    match issue.state.name:
+        case "Done":
+            status_color = Fore.GREEN
+        case "In Progress":
+            status_color = Fore.YELLOW
+        case "Prioritized backlog":
+            status_color = Fore.BLUE
+        case _:
+            status_color = Fore.RED
+
+    status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
+    identifier = f"{Fore.GREEN}{issue.identifier}{Style.RESET_ALL}"
+    title = f"{identifier} - {issue.title} ({status})"
+    url = f"{Fore.YELLOW}{issue.url}{Style.RESET_ALL}"
+    print(title)
+    print()
+    if show_description:
+        print_description(issue.description)
+        print()
+
+    print(url)
+
+
+def print_issues(issues: list[linear.Issue]):
+    for issue in issues:
+        print_issue(issue)
+
+
+def print_issue_list(
+    issues_by_state: dict[str, list[linear.Issue]], state_filter: list[str]
+):
+    issues_to_print = [
+        issue
+        for state, issues in issues_by_state.items()
+        if state in state_filter
+        for issue in issues
+    ]
+
+    print_issues(issues_to_print)
 
 
 def list_issues(accepted_states: list[str]):
-    init()
     me = linear.get_me()
 
     # Group issues by `issue.state.name`
@@ -25,37 +66,7 @@ def list_issues(accepted_states: list[str]):
     for item in me.assigned_issues:
         issues_by_state[item.state.name].append(item)
 
-    selected_states = [
-        state for state in issues_by_state.keys() if state in accepted_states
-    ]
-
-    if len(selected_states) == 0:
-        print(f"No issues in ({', '.join(accepted_states)})")
-        # Print the count of issues in each stated
-        for state, issues in issues_by_state.items():
-            print(f"{state} ({len(issues)})")
-        return
-
-    for state, issues in issues_by_state.items():
-        if state not in selected_states:
-            continue
-
-        match state:
-            case "Done":
-                status_color = Fore.GREEN
-            case "In Progress":
-                status_color = Fore.YELLOW
-            case "Prioritized backlog":
-                status_color = Fore.BLUE
-            case _:
-                status_color = Fore.RED
-
-        status = f"{status_color}{state}{Style.RESET_ALL}"
-        for issue in issues:
-            print()
-            identifier = f"{Fore.GREEN}{issue.identifier}{Style.RESET_ALL}"
-            print(f"{identifier} - {issue.title} ({status})")
-            print(f"{issue.url}")
+    print_issue_list(issues_by_state, state_filter=accepted_states)
 
 
 def view_user():
@@ -96,6 +107,9 @@ def issue_view(args):
 
     def get_issue_id(issue: str) -> str:
         if issue.startswith("http"):
+            # TODO: Validate url,
+            # https://linear.app/linear-oss/issue/TRA-383/linear-cli
+            # Validate issue id after parsing
             return args.issue.split("/")[-2]
         else:
             return args.issue
@@ -107,10 +121,11 @@ def issue_view(args):
         webbrowser.open(issue.url)
         return
 
-    print_issue(issue)
+    print_issue(issue, show_description=True)
 
 
 def cli():
+    init()
     parser = argparse.ArgumentParser(description="Linear CLI")
     subparsers = parser.add_subparsers(dest="command")
     issue_parser = subparsers.add_parser("issue")
