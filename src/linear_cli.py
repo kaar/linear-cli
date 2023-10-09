@@ -3,59 +3,9 @@ import os
 import webbrowser
 from collections import defaultdict
 
-from colorama import Fore, Style, init
-
 import linear
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
-
-
-def print_description(description: str):
-    # Trim any starting \n\
-    description = description.replace("\n\\", "\n")
-    print(description)
-
-
-def print_issue(issue: linear.Issue, show_description: bool = False):
-    match issue.state.name:
-        case "Done":
-            status_color = Fore.GREEN
-        case "In Progress":
-            status_color = Fore.YELLOW
-        case "Prioritized backlog":
-            status_color = Fore.BLUE
-        case _:
-            status_color = Fore.RED
-
-    status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
-    identifier = f"{Fore.GREEN}{issue.identifier}{Style.RESET_ALL}"
-    title = f"{identifier} - {issue.title} ({status})"
-    url = f"{Fore.YELLOW}{issue.url}{Style.RESET_ALL}"
-    print(title)
-    print()
-    if show_description:
-        print_description(issue.description)
-        print()
-
-    print(url)
-
-
-def print_issues(issues: list[linear.Issue]):
-    for issue in issues:
-        print_issue(issue)
-
-
-def print_issue_list(
-    issues_by_state: dict[str, list[linear.Issue]], state_filter: list[str]
-):
-    issues_to_print = [
-        issue
-        for state, issues in issues_by_state.items()
-        if state in state_filter
-        for issue in issues
-    ]
-
-    print_issues(issues_to_print)
 
 
 def list_issues(accepted_states: list[str]):
@@ -66,7 +16,14 @@ def list_issues(accepted_states: list[str]):
     for item in me.assigned_issues:
         issues_by_state[item.state.name].append(item)
 
-    print_issue_list(issues_by_state, state_filter=accepted_states)
+    issues_to_print = [
+        issue
+        for state, issues in issues_by_state.items()
+        if state in accepted_states
+        for issue in issues
+    ]
+
+    linear.print.print_issues(issues_to_print)
 
 
 def view_user():
@@ -121,11 +78,10 @@ def issue_view(args):
         webbrowser.open(issue.url)
         return
 
-    print_issue(issue, show_description=True)
+    linear.print.print_issue(issue, show_description=True)
 
 
 def cli():
-    init()
     parser = argparse.ArgumentParser(description="Linear CLI")
     subparsers = parser.add_subparsers(dest="command")
     issue_parser = subparsers.add_parser("issue")
