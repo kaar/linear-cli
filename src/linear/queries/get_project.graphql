@@ -1,5 +1,0 @@
-query Project {
-  project(id: "%s") {
-    id
-  }
-}

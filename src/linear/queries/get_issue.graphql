@@ -1,7 +1,0 @@
-query Issue {
-  issue(id: "%s") {
-    id
-    title
-    description
-  }
-}
