@@ -10,12 +10,7 @@ import linear
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
 
-def view_issue(issue_id: str, web: bool = False):
-    issue = linear.get_issue(issue_id)
-    if web:
-        webbrowser.open(issue.url)
-        return
-
+def print_issue(issue: linear.Issue):
     print(f"{issue.title}\n")
     print(f"{issue.description}")
     print(f"{issue.url}")
@@ -99,11 +94,20 @@ def issue_view(args):
     linear-cli issue view TRA-683
     """
 
+    def get_issue_id(issue: str) -> str:
+        if issue.startswith("http"):
+            return args.issue.split("/")[-2]
+        else:
+            return args.issue
+
+    issue_id = get_issue_id(args.issue)
+
+    issue = linear.get_issue(issue_id)
     if args.web:
-        view_issue(args.issue_id, web=True)
+        webbrowser.open(issue.url)
         return
 
-    view_issue(args.issue_id)
+    print_issue(issue)
 
 
 def cli():
@@ -123,7 +127,7 @@ def cli():
 
     # Issue view
     issue_view_parser = issue_subparsers.add_parser("view")
-    issue_view_parser.add_argument("issue_id", type=str, help="Issue ID")
+    issue_view_parser.add_argument("issue", type=str, help="Issue Id or Url")
     issue_view_parser.add_argument(
         "--web", action="store_true", help="Open issue in browser"
     )
