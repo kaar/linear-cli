@@ -8,6 +8,7 @@ readme = "README.md"
 packages = [
     { include = "linear", from = "src" },
     { include = "xdg", from = "src" },
+    { include = "linear_cli.py", from = "src" },
 ]
 
 [tool.poetry.dependencies]
@@ -16,7 +17,7 @@ requests = "^2.31.0"
 colorama = "^0.4.6"
 
 [tool.poetry.scripts]
-linear-cli = "main:cli"
+linear-cli = "linear_cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
