@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linear-cli"
-version = "0.1.0"
+version = "1.0.0"
 description = "Linear CLI tool written in Python"
 authors = ["Caspar Nettelbladt <caspar.n@gmail.com>"]
 license = "MIT"
