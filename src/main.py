@@ -5,13 +5,13 @@ from collections import defaultdict
 
 from colorama import Back, Fore, Style, init
 
-from . import linear_client
+import linear
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
 
 def view_issue(issue_id: str, web: bool = False):
-    issue = linear_client.get_issue(issue_id)
+    issue = linear.get_issue(issue_id)
     if web:
         webbrowser.open(issue.url)
         return
@@ -23,8 +23,7 @@ def view_issue(issue_id: str, web: bool = False):
 
 def list_issues(accepted_states: list[str]):
     init()
-    client = linear_client.LinearClient(LINEAR_API_KEY)
-    me = client.get_me()
+    me = linear.get_me()
 
     # Group issues by `issue.state.name`
     issues_by_state = defaultdict(list)
@@ -139,16 +138,12 @@ def cli():
 
 
 def main():
-    client = linear_client.LinearClient(LINEAR_API_KEY)
-    issue = client.get_issue("TRA-383")
-    me = client.get_me()
+    issue = linear.get_issue("TRA-383")
+    me = linear.get_me()
     print(f"Hello {me.name}! Your email is {me.email}")
 
-    issue = client.get_issue("TRA-383")
+    issue = linear.get_issue("TRA-383")
     print(f"Found issue {issue.title} with description {issue.description}")
-
-    teams = client.get_teams()
-    print(f"Found {len(teams)} teams")
 
 
 if __name__ == "__main__":

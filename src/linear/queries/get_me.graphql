@@ -1,7 +1,0 @@
-query Me {
-  viewer {
-    id
-    name
-    email
-  }
-}

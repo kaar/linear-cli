@@ -5,7 +5,10 @@ description = "Linear CLI tool written in Python"
 authors = ["Caspar Nettelbladt <caspar.n@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "linear", from = "src" }]
+packages = [
+    { include = "linear", from = "src" },
+    { include = "xdg", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -13,7 +16,7 @@ requests = "^2.31.0"
 colorama = "^0.4.6"
 
 [tool.poetry.scripts]
-linear-cli = "linear.main:cli"
+linear-cli = "main:cli"
 
 [build-system]
 requires = ["poetry-core"]
