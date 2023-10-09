@@ -1,22 +1,28 @@
-import json
 import os
 from dataclasses import dataclass
 
 import requests
 
+from .xdg import XDGAppCache
+
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LINEAR_URL = "https://api.linear.app/graphql"
 
 
+APP_CACHE = XDGAppCache("linear")
+
+
 def gql_request(query: str) -> dict:
+    if response := APP_CACHE.load(query):
+        return response
+
     response = requests.post(
         LINEAR_URL,
         headers={"Authorization": LINEAR_API_KEY},
         json={"query": query},
     )
 
-    return response.json()
-
+    APP_CACHE.save(query, response.json())
 
     return response.json()
 
