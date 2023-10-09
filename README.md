@@ -8,11 +8,16 @@ Requires `LINEAR_API_KEY`
 pipx install git+https://github.com/kaar/linear-cli
 ```
 
-## Development
+## Usage
 
 ```bash
-pipx install -e .
+linear-cli issue list
+linear-cli issue view TRA-383
 ```
+
+## Development
+
+See [Makefile](./Makefile)
 
 ## Documentation
 
