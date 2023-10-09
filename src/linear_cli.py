@@ -8,7 +8,7 @@ import linear
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
 
-def list_issues(accepted_states: list[str]):
+def list_issues(accepted_states: list[str], show_description: bool = False):
     me = linear.get_me()
 
     # Group issues by `issue.state.name`
@@ -23,7 +23,8 @@ def list_issues(accepted_states: list[str]):
         for issue in issues
     ]
 
-    linear.print.print_issues(issues_to_print)
+    for issue in issues_to_print:
+        linear.print.print_issue(issue, show_description=show_description)
 
 
 def view_user():
@@ -37,6 +38,7 @@ def issue_list(args):
     linear issue list --all
     linear issue list --cancelled
     linear issue list --completed
+    linear issue list --show-description
     """
     all_states = ["In Progress", "Done", "Prioritized backlog"]
     accepted_states = ["In Progress", "Prioritized backlog"]
@@ -48,7 +50,7 @@ def issue_list(args):
     elif args.cancelled:
         accepted_states.append("Cancelled")
 
-    list_issues(accepted_states)
+    list_issues(accepted_states, show_description=args.show_description)
 
 
 def issue_view(args):
@@ -94,6 +96,9 @@ def cli():
     issue_list_parser.add_argument("--done", action="store_true", help="Completed")
     issue_list_parser.add_argument("--all", action="store_true", help="All")
     issue_list_parser.add_argument("--cancelled", action="store_true", help="Cancelled")
+    issue_list_parser.add_argument(
+        "--show-description", action="store_true", help="Show description"
+    )
     issue_list_parser.set_defaults(func=issue_list)
 
     # Issue view

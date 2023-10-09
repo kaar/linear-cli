@@ -5,16 +5,16 @@ from .models import Issue
 init()
 
 
-def print_description(description: str):
-    if not description:
-        return
-    # Trim any starting \n\
-    description = description.replace("\n\\", "\n")
-    print(description)
-    print()
-
-
 def print_issue(issue: Issue, show_description: bool = False):
+    def print_description(description: str):
+        if not description:
+            return
+        # Trim any starting \n\
+        # As linear escapes its list `-` items with \
+        description = description.replace("\n\\", "\n")
+        print(description)
+        print()
+
     match issue.state.name:
         case "Done":
             status_color = Fore.GREEN
@@ -35,8 +35,3 @@ def print_issue(issue: Issue, show_description: bool = False):
         print_description(issue.description)
 
     print(url)
-
-
-def print_issues(issues: list[Issue]):
-    for issue in issues:
-        print_issue(issue)
