@@ -37,7 +37,17 @@ class WorkflowState:
 @dataclass
 class Issue:
     id: str
+
+    identifier: str
+    """
+    Issue's human readable identifier (e.g. ENG-123).
+    """
+
     title: str
+    """
+    The issue's title.
+    """
+
     description: str
     created_at: str
     url: str
@@ -50,6 +60,9 @@ class User:
     name: str
     email: str
     assigned_issues: list[Issue]
+    """
+    Issues assigned to the user.
+    """
 
 
 @dataclass
@@ -92,6 +105,7 @@ class LinearClient:
             assignedIssues {
                 nodes {
                     id
+                    identifier
                     title
                     createdAt
                     description
@@ -115,6 +129,7 @@ class LinearClient:
             assigned_issues=[
                 Issue(
                     id=issue["id"],
+                    identifier=issue["identifier"],
                     title=issue["title"],
                     description=issue["description"],
                     created_at=issue["createdAt"],

@@ -25,11 +25,10 @@ def list_issues(accepted_states: list[str]):
     init()
     client = linear_client.LinearClient(LINEAR_API_KEY)
     me = client.get_me()
+
     # Group issues by `issue.state.name`
     issues_by_state = defaultdict(list)
-
     for item in me.assigned_issues:
-        # if item.state.name in accepted_states:
         issues_by_state[item.state.name].append(item)
 
     selected_states = [
@@ -58,11 +57,10 @@ def list_issues(accepted_states: list[str]):
                 status_color = Fore.RED
 
         status = f"{status_color}{state}{Style.RESET_ALL}"
-        print(f"{status} ({len(issues)})")
         for issue in issues:
-            print(f"{issue.title} ({status})")
-            print(f"{issue.description}")
             print()
+            identifier = f"{Fore.GREEN}{issue.identifier}{Style.RESET_ALL}"
+            print(f"{identifier} - {issue.title} ({status})")
             print(f"{issue.url}")
 
 
@@ -87,7 +85,6 @@ def issue_list(args):
         accepted_states.append("Done")
     elif args.cancelled:
         accepted_states.append("Cancelled")
-    print(accepted_states)
 
     list_issues(accepted_states)
 
