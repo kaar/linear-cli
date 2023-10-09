@@ -44,16 +44,21 @@ def list_issues(accepted_states: list[str]):
         return
 
     for state, issues in issues_by_state.items():
-        # title_color = Fore.GREEN if issue.state.name == "Done" else Fore.RED
+        if state not in selected_states:
+            continue
+
         match state:
             case "Done":
                 status_color = Fore.GREEN
             case "In Progress":
                 status_color = Fore.YELLOW
+            case "Prioritized backlog":
+                status_color = Fore.BLUE
             case _:
                 status_color = Fore.RED
 
         status = f"{status_color}{state}{Style.RESET_ALL}"
+        print(f"{status} ({len(issues)})")
         for issue in issues:
             print(f"{issue.title} ({status})")
             print(f"{issue.description}")
@@ -73,8 +78,8 @@ def issue_list(args):
     linear issue list --cancelled
     linear issue list --completed
     """
-    all_states = ["In Progress", "Done", "Prioritized Backlog"]
-    accepted_states = ["In Progress"]
+    all_states = ["In Progress", "Done", "Prioritized backlog"]
+    accepted_states = ["In Progress", "Prioritized backlog"]
 
     if args.all:
         accepted_states = all_states
