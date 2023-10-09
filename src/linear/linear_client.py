@@ -80,13 +80,7 @@ class LinearClient:
         self.api_key = api_key
 
     def gql_request(self, query: str) -> dict:
-        response = requests.post(
-            LINEAR_URL,
-            headers={"Authorization": self.api_key},
-            json={"query": query},
-        )
-
-        return response.json()
+        return gql_request(query)
 
     def get_me(self) -> User:
         query = """
