@@ -26,9 +26,21 @@ class Issue:
     created_at: str
     url: str
     state: WorkflowState
+    children: list["Issue"]
 
     @staticmethod
-    def gql_fields() -> str:
+    def gql_fields(include_children=False) -> str:
+        children_query = ""
+        if include_children:
+            children_query = """
+                children {
+                    nodes {
+                        %s
+                    }
+                }
+            """ % (
+                Issue.gql_fields()
+            )
         return """
             id
             identifier
@@ -41,10 +53,14 @@ class Issue:
               name
               type
             }
-        """
+            %s
+        """ % (
+            children_query
+        )
 
     @staticmethod
     def from_gql(issue: dict) -> "Issue":
+        has_children = "children" in issue
         return Issue(
             id=issue["id"],
             identifier=issue["identifier"],
@@ -57,6 +73,9 @@ class Issue:
                 name=issue["state"]["name"],
                 type=issue["state"]["type"],
             ),
+            children=[Issue.from_gql(child) for child in issue["children"]["nodes"]]
+            if has_children
+            else [],
         )
 
 

@@ -15,7 +15,7 @@ def get_issue(id: str) -> Issue:
     }
     """ % (
         id,
-        Issue.gql_fields(),
+        Issue.gql_fields(include_children=True),
     )
 
     if data := APP_CACHE.load(id):
