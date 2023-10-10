@@ -1,4 +1,5 @@
 import textwrap
+from datetime import datetime
 
 from colorama import Fore, Style, init
 from pygments import highlight
@@ -27,7 +28,16 @@ def markdown_format(description: str):
     return highlighted_test
 
 
-def issue_as_formatted_text(issue: Issue, show_description: bool = False):
+def date_format(date: str):
+    datetime_parsed = datetime.fromisoformat(date)
+    return f" ({datetime_parsed.strftime('%Y-%m-%d - %H:%M:%S')})"
+
+
+def issue_as_formatted_text(
+    issue: Issue,
+    show_description: bool = False,
+    show_comments: bool = False,
+):
     issue_text = ""
 
     match issue.state.name:
@@ -58,11 +68,39 @@ def issue_as_formatted_text(issue: Issue, show_description: bool = False):
         for subissue in show_subissues:
             issue_as_formatted_text(subissue, show_description=False)
 
-    url = f"{Fore.GREEN}{issue.url}{Style.RESET_ALL}"
+    comment_text = ""
+    if issue.comments:
+        if show_comments:
+            # comment_text = "\nComments:\n"
+            comment_text = "\n"
+            for comment in issue.comments:
+                comment_text += (
+                    f"{Fore.BLUE}"
+                    f"{comment.user_name}{date_format(comment.created_at)}"
+                    f"{Style.RESET_ALL}\n"
+                )
+                comment_text += markdown_format(comment.body)
+                issue_text += comment_text
+
+        else:
+            comment_text = (
+                f"{Fore.RED}"
+                f"--- Not showing {len(issue.comments)} comments ---"
+                f"{Style.RESET_ALL}"
+            )
+            issue_text += comment_text
+            # issue_text += f"{Fore.RED}{comment_text}{Style.RESET_ALL}"
+
+    url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
     issue_text += f"\n{url}"
+
     return issue_text
 
 
-def print_issue(issue: Issue, show_description: bool = False):
-    issue_text = issue_as_formatted_text(issue, show_description=show_description)
+def print_issue(
+    issue: Issue, show_description: bool = False, show_comments: bool = False
+):
+    issue_text = issue_as_formatted_text(
+        issue, show_description=show_description, show_comments=show_comments
+    )
     print(issue_text)

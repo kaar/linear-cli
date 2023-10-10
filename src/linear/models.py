@@ -24,6 +24,14 @@ class WorkflowState:
 
 
 @dataclass
+class Comment:
+    id: str
+    body: str
+    created_at: str
+    user_name: str
+
+
+@dataclass
 class Issue:
     id: str
 
@@ -42,6 +50,7 @@ class Issue:
     url: str
     state: WorkflowState
     children: list["Issue"]
+    comments: list["Comment"]
 
     @staticmethod
     def gql_fields(include_children=False) -> str:
@@ -68,6 +77,16 @@ class Issue:
               name
               type
             }
+            comments {
+                nodes {
+                    id
+                    body
+                    createdAt
+                    user {
+                        name
+                    }
+                }
+            }
             %s
         """ % (
             children_query
@@ -91,6 +110,15 @@ class Issue:
             children=[Issue.from_gql(child) for child in issue["children"]["nodes"]]
             if has_children
             else [],
+            comments=[
+                Comment(
+                    id=comment["id"],
+                    body=comment["body"],
+                    created_at=comment["createdAt"],
+                    user_name=comment["user"]["name"],
+                )
+                for comment in issue["comments"]["nodes"]
+            ],
         )
 
 

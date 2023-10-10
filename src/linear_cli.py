@@ -57,6 +57,7 @@ def issue_view(args):
     linear issue view <issue_id>
 
     Options:
+        --comments - show comments
         --web - open issue in browser
 
     Examples:
@@ -79,7 +80,7 @@ def issue_view(args):
         webbrowser.open(issue.url)
         return
 
-    linear.print.print_issue(issue, show_description=True)
+    linear.print.print_issue(issue, show_description=True, show_comments=args.comments)
 
 
 def cli():
@@ -105,6 +106,9 @@ def cli():
     issue_view_parser.add_argument("issue", type=str, help="Issue Id or Url")
     issue_view_parser.add_argument(
         "--web", action="store_true", help="Open issue in browser"
+    )
+    issue_view_parser.add_argument(
+        "--comments", action="store_true", help="Show comments"
     )
     issue_view_parser.set_defaults(func=issue_view)
 
