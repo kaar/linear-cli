@@ -87,9 +87,9 @@ def issue_as_formatted_text(
             status_color = Fore.RED
 
     status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
-    title = f"({status}) {issue.title} {issue.identifier}"
+    title = f"{issue.identifier} - {issue.title} ({status})"
 
-    issue_text += f"{title}"
+    issue_text += f"{title}\n"
 
     if show_description:
         if issue.description:
@@ -119,7 +119,7 @@ def issue_as_formatted_text(
 
     if show_url:
         url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
-        issue_text += f"{url}"
+        issue_text += f"{url}\n"
 
     return issue_text
 
@@ -136,4 +136,4 @@ def print_issue(
         show_comments=show_comments,
         show_url=show_url,
     )
-    print(issue_text)
+    print(issue_text, end="")
