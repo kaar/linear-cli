@@ -72,6 +72,7 @@ def issue_as_formatted_text(
     issue: Issue,
     show_description: bool = False,
     show_comments: bool = False,
+    show_url: bool = False,
 ):
     issue_text = ""
 
@@ -116,16 +117,23 @@ def issue_as_formatted_text(
 
         issue_text += comment_text
 
-    url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
-    issue_text += f"\n{url}"
+    if show_url:
+        url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
+        issue_text += f"{url}"
 
     return issue_text
 
 
 def print_issue(
-    issue: Issue, show_description: bool = False, show_comments: bool = False
+    issue: Issue,
+    show_description: bool = False,
+    show_comments: bool = False,
+    show_url: bool = False,
 ):
     issue_text = issue_as_formatted_text(
-        issue, show_description=show_description, show_comments=show_comments
+        issue,
+        show_description=show_description,
+        show_comments=show_comments,
+        show_url=show_url,
     )
     print(issue_text)

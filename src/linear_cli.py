@@ -49,7 +49,9 @@ def issue_list(args):
     ]
 
     for issue in issues_to_print:
-        linear.print.print_issue(issue, show_description=args.show_description)
+        linear.print.print_issue(
+            issue, show_description=args.show_description, show_url=False
+        )
 
 
 def issue_view(args):
@@ -80,7 +82,9 @@ def issue_view(args):
         webbrowser.open(issue.url)
         return
 
-    linear.print.print_issue(issue, show_description=True, show_comments=args.comments)
+    linear.print.print_issue(
+        issue, show_description=True, show_comments=args.comments, show_url=True
+    )
 
 
 def cli():
