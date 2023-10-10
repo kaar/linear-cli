@@ -115,7 +115,7 @@ def issue_as_formatted_text(
                 f"{Style.RESET_ALL}"
             )
 
-        issue_text += comment_text
+        issue_text += f"{comment_text}\n"
 
     if show_url:
         url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
