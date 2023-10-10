@@ -1,3 +1,4 @@
+from . import print
 from .models import Issue, User, WorkflowState
 from .queries import get_issue, get_me
 
@@ -7,4 +8,5 @@ __all__ = [
     "Issue",
     "get_issue",
     "get_me",
+    "print",
 ]
