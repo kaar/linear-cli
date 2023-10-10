@@ -30,8 +30,12 @@ def print_issue(issue: Issue, show_description: bool = False):
     title = f"{identifier} - {issue.title} ({status})"
     url = f"{Fore.YELLOW}{issue.url}{Style.RESET_ALL}"
     print(title)
-    print()
+    print(f"- {url}")
+
     if show_description:
         print_description(issue.description)
 
-    print(url)
+    if show_subissues := issue.children:
+        print("Sub-issues:")
+        for subissue in show_subissues:
+            print_issue(subissue, show_description=False)

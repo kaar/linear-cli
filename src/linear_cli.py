@@ -8,7 +8,32 @@ import linear
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 
 
-def list_issues(accepted_states: list[str], show_description: bool = False):
+def issue_list(args):
+    """
+    linear issue list <options>
+
+    Options:
+        --all - all issues
+        --cancelled - cancelled issues
+        --show-description - show issue description
+
+    Examples:
+        linear issue list
+        linear issue list --all
+        linear issue list --cancelled
+        linear issue list --completed
+        linear issue list --show-description
+    """
+    all_states = ["In Progress", "Done", "Prioritized backlog"]
+    accepted_states = ["In Progress", "Prioritized backlog"]
+
+    if args.all:
+        accepted_states = all_states
+    elif args.done:
+        accepted_states.append("Done")
+    elif args.cancelled:
+        accepted_states.append("Cancelled")
+
     me = linear.get_me()
 
     # Group issues by `issue.state.name`
@@ -24,33 +49,7 @@ def list_issues(accepted_states: list[str], show_description: bool = False):
     ]
 
     for issue in issues_to_print:
-        linear.print.print_issue(issue, show_description=show_description)
-
-
-def view_user():
-    # List issues assigned to me
-    pass
-
-
-def issue_list(args):
-    """
-    linear issue list
-    linear issue list --all
-    linear issue list --cancelled
-    linear issue list --completed
-    linear issue list --show-description
-    """
-    all_states = ["In Progress", "Done", "Prioritized backlog"]
-    accepted_states = ["In Progress", "Prioritized backlog"]
-
-    if args.all:
-        accepted_states = all_states
-    elif args.done:
-        accepted_states.append("Done")
-    elif args.cancelled:
-        accepted_states.append("Cancelled")
-
-    list_issues(accepted_states, show_description=args.show_description)
+        linear.print.print_issue(issue, show_description=args.show_description)
 
 
 def issue_view(args):
@@ -61,7 +60,7 @@ def issue_view(args):
         --web - open issue in browser
 
     Examples:
-    linear-cli issue view TRA-683
+        linear-cli issue view TRA-683
     """
 
     def get_issue_id(issue: str) -> str:
