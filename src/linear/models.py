@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -50,7 +51,7 @@ class Issue:
     url: str
     state: WorkflowState
     children: list["Issue"]
-    comments: list["Comment"]
+    comments: Optional[list["Comment"]]
 
     @staticmethod
     def gql_fields(include_children=False) -> str:
@@ -117,7 +118,7 @@ class Issue:
                     created_at=comment["createdAt"],
                     user_name=comment["user"]["name"],
                 )
-                for comment in issue["comments"]["nodes"]
+                for comment in issue.get("comments", {}).get("nodes", [])
             ],
         )
 
@@ -140,12 +141,20 @@ class User:
             email
             assignedIssues {
                 nodes {
-                    %s
+                    id
+                    identifier
+                    title
+                    createdAt
+                    description
+                    url
+                    state {
+                      id
+                      name
+                      type
+                    }
                 }
             }
-        """ % (
-            Issue.gql_fields()
-        )
+        """
 
     @staticmethod
     def from_gql(viewer: dict) -> "User":
