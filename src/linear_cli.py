@@ -25,7 +25,7 @@ def issue_list(args):
         linear issue list --show-description
     """
     all_states = ["In Progress", "Done", "Prioritized backlog"]
-    accepted_states = ["In Progress", "Prioritized backlog"]
+    accepted_states = ["In Progress", "Prioritized backlog", "Under review"]
 
     if args.all:
         accepted_states = all_states
