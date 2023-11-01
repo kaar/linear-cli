@@ -30,23 +30,28 @@ def cmd_issue():
 
 
 @cmd_issue.command("list")
-@click.option("--done", is_flag=True, help="Completed")
-@click.option("--cancelled", is_flag=True, help="Cancelled")
-@click.option("--all", is_flag=True, help="All issues")
-@click.option("--show-description", is_flag=True, help="Show issue description")
-def cmd_issue_list(done: bool, cancelled: bool, all: bool, show_description: bool):
+@click.option(
+    "-s",
+    "--state",
+    type=click.Choice(["open", "closed", "merged", "all"]),
+    default="open",
+    help='Filter by state: {open|closed|all} (default "open")',
+)
+def cmd_issue_list(state):
     """
-    linear issue list
+    List linear issues assigned to you
     """
-    all_states = ["In Progress", "Done", "Prioritized backlog"]
-    accepted_states = ["In Progress", "Prioritized backlog", "Under review"]
 
-    if all:
-        accepted_states = all_states
-    elif done:
-        accepted_states.append("Done")
-    elif cancelled:
-        accepted_states.append("Cancelled")
+    OPEN_STATES = ["In Progress", "Under review"]
+    CLOSED_STATES = ["Done"]
+    ALL_STATES = OPEN_STATES + CLOSED_STATES
+    match state:
+        case "open":
+            selected_states = OPEN_STATES
+        case "closed":
+            selected_states = CLOSED_STATES
+        case _:
+            selected_states = ALL_STATES
 
     me = linear.get_me()
 
@@ -58,14 +63,14 @@ def cmd_issue_list(done: bool, cancelled: bool, all: bool, show_description: boo
     issues_to_print = [
         issue
         for state, issues in issues_by_state.items()
-        if state in accepted_states
+        if state in selected_states
         for issue in issues
     ]
 
     for issue in issues_to_print:
         linear.print.print_issue(
             issue,
-            show_description=show_description,
+            show_description=False,
             show_url=False,
         )
 
