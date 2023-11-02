@@ -60,6 +60,7 @@ class Issue:
     state: WorkflowState
     children: list["Issue"]
     comments: Optional[list["Comment"]]
+    assignee: Optional["User"] = None
 
     @staticmethod
     def gql_fields(include_children=False) -> str:
@@ -81,6 +82,11 @@ class Issue:
             createdAt
             description
             url
+            assignee {
+                id
+                name
+                email
+            }
             state {
               id
               name
@@ -104,6 +110,7 @@ class Issue:
     @staticmethod
     def from_gql(issue: dict) -> "Issue":
         has_children = "children" in issue
+        has_assignee = "assignee" in issue and issue["assignee"] is not None
         return Issue(
             id=issue["id"],
             identifier=issue["identifier"],
@@ -128,6 +135,7 @@ class Issue:
                 )
                 for comment in issue.get("comments", {}).get("nodes", [])
             ],
+            assignee=User.from_gql(issue["assignee"]) if has_assignee else None,
         )
 
 
@@ -172,13 +180,14 @@ class User:
     id: str
     name: str
     email: str
-    assigned_issues: list[Issue]
-    """
-    Issues assigned to the user.
-    """
-    teams: list[Team]
+    teams: Optional[list[Team]] = None
     """
     List of teams the user is a member of.
+    """
+
+    assigned_issues: Optional[list[Issue]] = None
+    """
+    Issues assigned to the user.
     """
 
     @staticmethod
@@ -187,6 +196,13 @@ class User:
             id
             name
             email
+            teamMemberships {
+                nodes {
+                    team {
+                        %s
+                    }
+                }
+            }
             assignedIssues {
                 nodes {
                     id
@@ -202,28 +218,27 @@ class User:
                     }
                 }
             }
-            teamMemberships {
-                nodes {
-                    team {
-                        %s
-                    }
-                }
-            }
         """ % (
             Team.gql_fields(include_issues=False)
         )
 
     @staticmethod
     def from_gql(viewer: dict) -> "User":
+        has_assigned_issues = "assignedIssues" in viewer
+        has_teams = "teamMemberships" in viewer
         return User(
             id=viewer["id"],
             name=viewer["name"],
             email=viewer["email"],
-            assigned_issues=[
-                Issue.from_gql(issue) for issue in viewer["assignedIssues"]["nodes"]
-            ],
             teams=[
                 Team.from_gql(team["team"])
                 for team in viewer["teamMemberships"]["nodes"]
-            ],
+            ]
+            if has_teams
+            else None,
+            assigned_issues=[
+                Issue.from_gql(issue) for issue in viewer["assignedIssues"]["nodes"]
+            ]
+            if has_assigned_issues
+            else None,
         )
