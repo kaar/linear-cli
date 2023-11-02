@@ -1,38 +1,58 @@
-import argparse
+import logging
 import os
 import webbrowser
 from collections import defaultdict
 
+import click
+
 import linear
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
+LOGGER = logging.getLogger(__name__)
+
+OPEN_STATES = ["In Progress", "Under review"]
+CLOSED_STATES = ["Done"]
+ALL_STATES = OPEN_STATES + CLOSED_STATES
 
 
-def issue_list(args):
+def setup_logging():
+    DEBUG = os.environ.get("DEBUG", False)
+    log_level = logging.DEBUG if DEBUG else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    LOGGER.debug("Debug mode enabled")
+
+
+@click.group("issue")
+def cmd_issue():
     """
-    linear issue list <options>
-
-    Options:
-        --all - all issues
-        --cancelled - cancelled issues
-        --show-description - show issue description
-
-    Examples:
-        linear issue list
-        linear issue list --all
-        linear issue list --cancelled
-        linear issue list --completed
-        linear issue list --show-description
+    linear issue <subcommand>
     """
-    all_states = ["In Progress", "Done", "Prioritized backlog"]
-    accepted_states = ["In Progress", "Prioritized backlog", "Under review"]
 
-    if args.all:
-        accepted_states = all_states
-    elif args.done:
-        accepted_states.append("Done")
-    elif args.cancelled:
-        accepted_states.append("Cancelled")
+
+@cmd_issue.command("list")
+@click.option(
+    "-s",
+    "--state",
+    type=click.Choice(["open", "closed", "all"]),
+    default="open",
+    help='Filter by state: {open|closed|all} (default "open")',
+)
+def cmd_issue_list(state):
+    """
+    List linear issues assigned to you
+    """
+
+    match state:
+        case "open":
+            selected_states = OPEN_STATES
+        case "closed":
+            selected_states = CLOSED_STATES
+        case _:
+            selected_states = ALL_STATES
 
     me = linear.get_me()
 
@@ -44,26 +64,27 @@ def issue_list(args):
     issues_to_print = [
         issue
         for state, issues in issues_by_state.items()
-        if state in accepted_states
+        if state in selected_states
         for issue in issues
     ]
 
     for issue in issues_to_print:
         linear.print.print_issue(
-            issue, show_description=args.show_description, show_url=False
+            issue,
+            show_description=False,
+            show_url=False,
         )
 
 
-def issue_view(args):
+@cmd_issue.command("view")
+@click.argument("issue_id", type=str)
+@click.option("--web", is_flag=True)
+@click.option("--comments", is_flag=True)
+def cmd_issue_view(issue_id: str, web: bool, comments: bool):
     """
     linear issue view <issue_id>
 
-    Options:
-        --comments - show comments
-        --web - open issue in browser
-
-    Examples:
-        linear-cli issue view TRA-683
+    TODO: Examples
     """
 
     def get_issue_id(issue: str) -> str:
@@ -71,67 +92,30 @@ def issue_view(args):
             # TODO: Validate url,
             # https://linear.app/linear-oss/issue/TRA-383/linear-cli
             # Validate issue id after parsing
-            return args.issue.split("/")[-2]
+            return issue_id.split("/")[-2]
         else:
-            return args.issue
+            return issue_id
 
-    issue_id = get_issue_id(args.issue)
+    issue_id = get_issue_id(issue_id)
 
     issue = linear.get_issue(issue_id)
-    if args.web:
+    if web:
         webbrowser.open(issue.url)
         return
 
     linear.print.print_issue(
-        issue, show_description=True, show_comments=args.comments, show_url=True
+        issue,
+        show_description=True,
+        show_comments=comments,
+        show_url=True,
     )
 
 
+@click.group()
 def cli():
-    parser = argparse.ArgumentParser(description="Linear CLI")
-    subparsers = parser.add_subparsers(dest="command")
-    issue_parser = subparsers.add_parser("issue")
-
-    # Issue subcommands
-    issue_subparsers = issue_parser.add_subparsers(dest="issue_command")
-
-    # Issue list
-    issue_list_parser = issue_subparsers.add_parser("list")
-    issue_list_parser.add_argument("--done", action="store_true", help="Completed")
-    issue_list_parser.add_argument("--all", action="store_true", help="All")
-    issue_list_parser.add_argument("--cancelled", action="store_true", help="Cancelled")
-    issue_list_parser.add_argument(
-        "--show-description", action="store_true", help="Show description"
-    )
-    issue_list_parser.set_defaults(func=issue_list)
-
-    # Issue view
-    issue_view_parser = issue_subparsers.add_parser("view")
-    issue_view_parser.add_argument("issue", type=str, help="Issue Id or Url")
-    issue_view_parser.add_argument(
-        "--web", action="store_true", help="Open issue in browser"
-    )
-    issue_view_parser.add_argument(
-        "--comments", action="store_true", help="Show comments"
-    )
-    issue_view_parser.set_defaults(func=issue_view)
-
-    args = parser.parse_args()
-    match args:
-        case None:
-            parser.print_help()
-        case _:
-            args.func(args)
+    setup_logging()
 
 
-def main():
-    issue = linear.get_issue("TRA-383")
-    me = linear.get_me()
-    print(f"Hello {me.name}! Your email is {me.email}")
-
-    issue = linear.get_issue("TRA-383")
-    print(f"Found issue {issue.title} with description {issue.description}")
-
-
+cli.add_command(cmd_issue)
 if __name__ == "__main__":
-    main()
+    cli()
