@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import webbrowser
 from collections import defaultdict
 
@@ -41,7 +42,8 @@ def cmd_issue():
     default="open",
     help='Filter by state: {open|closed|all} (default "open")',
 )
-def cmd_issue_list(state):
+@click.option("--json", is_flag=True)
+def cmd_issue_list(state, json: bool):
     """
     List linear issues assigned to you
     """
@@ -68,19 +70,20 @@ def cmd_issue_list(state):
         for issue in issues
     ]
 
-    for issue in issues_to_print:
-        linear.print.print_issue(
-            issue,
-            show_description=False,
-            show_url=False,
-        )
+    printer = None
+    if json:
+        printer = linear.print.JsonPrinter(sys.stdout)
+    else:
+        printer = linear.print.ConsolePrinter(include_comments=False)
+    printer.print_issue_list(issues_to_print)
 
 
 @cmd_issue.command("view")
 @click.argument("issue_id", type=str)
 @click.option("--web", is_flag=True)
 @click.option("--comments", is_flag=True)
-def cmd_issue_view(issue_id: str, web: bool, comments: bool):
+@click.option("--json", is_flag=True)
+def cmd_issue_view(issue_id: str, web: bool, comments: bool, json: bool):
     """
     linear issue view <issue_id>
 
@@ -103,12 +106,13 @@ def cmd_issue_view(issue_id: str, web: bool, comments: bool):
         webbrowser.open(issue.url)
         return
 
-    linear.print.print_issue(
-        issue,
-        show_description=True,
-        show_comments=comments,
-        show_url=True,
-    )
+    printer = None
+    if json:
+        printer = linear.print.JsonPrinter(sys.stdout)
+    else:
+        printer = linear.print.ConsolePrinter(include_comments=comments)
+
+    printer.print_issue(issue)
 
 
 @click.group()
