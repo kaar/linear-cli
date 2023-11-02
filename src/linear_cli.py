@@ -10,6 +10,10 @@ import linear
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LOGGER = logging.getLogger(__name__)
 
+OPEN_STATES = ["In Progress", "Under review"]
+CLOSED_STATES = ["Done"]
+ALL_STATES = OPEN_STATES + CLOSED_STATES
+
 
 def setup_logging():
     DEBUG = os.environ.get("DEBUG", False)
@@ -33,7 +37,7 @@ def cmd_issue():
 @click.option(
     "-s",
     "--state",
-    type=click.Choice(["open", "closed", "merged", "all"]),
+    type=click.Choice(["open", "closed", "all"]),
     default="open",
     help='Filter by state: {open|closed|all} (default "open")',
 )
@@ -42,9 +46,6 @@ def cmd_issue_list(state):
     List linear issues assigned to you
     """
 
-    OPEN_STATES = ["In Progress", "Under review"]
-    CLOSED_STATES = ["Done"]
-    ALL_STATES = OPEN_STATES + CLOSED_STATES
     match state:
         case "open":
             selected_states = OPEN_STATES
@@ -82,6 +83,8 @@ def cmd_issue_list(state):
 def cmd_issue_view(issue_id: str, web: bool, comments: bool):
     """
     linear issue view <issue_id>
+
+    TODO: Examples
     """
 
     def get_issue_id(issue: str) -> str:
