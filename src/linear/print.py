@@ -62,19 +62,13 @@ class ConsolePrinter(Printer):
 
 
 def title_text(issue: Issue):
-    match issue.state.type:
-        case "backlog":
-            status_color = Fore.CYAN
-        case "completed":
-            status_color = Fore.GREEN
-        case "started":
-            status_color = Fore.YELLOW
-        case "unstarted":
-            status_color = Fore.BLUE
-        case "canceled":
-            status_color = Fore.RED
-        case _:
-            raise ValueError(issue.state.type)
+    status_color = {
+        "backlog": Fore.CYAN,
+        "completed": Fore.GREEN,
+        "started": Fore.YELLOW,
+        "unstarted": Fore.BLUE,
+        "canceled": Fore.RED,
+    }[issue.state.type]
 
     status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
     title = f"{issue.identifier} - {issue.title} ({status})"
