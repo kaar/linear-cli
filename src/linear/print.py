@@ -6,10 +6,8 @@ from datetime import datetime
 
 import colorama
 from colorama import Fore, Style
-from pygments import highlight
-from pygments.formatters import TerminalFormatter
-from pygments.lexers.markup import MarkdownLexer
 
+from . import highlight
 from .models import Issue
 
 
@@ -85,7 +83,7 @@ def issue_text(issue: Issue, show_comments):
 
     if issue.description:
         description = issue.description.replace("\n\\", "\n")
-        formatted_description = markdown_format(description)
+        formatted_description = highlight.markdown(description)
         text += f"\n{formatted_description}"
 
     if show_subissues := issue.children:
@@ -105,7 +103,7 @@ def issue_text(issue: Issue, show_comments):
                     f"{comment.user_name}{date_format(comment.created_at)}"
                     f"{Style.RESET_ALL}\n"
                 )
-                comment_text += markdown_format(comment.body)
+                comment_text += highlight.markdown(comment.body)
         else:
             comment_text = (
                 f"{Fore.RED}"
@@ -130,12 +128,6 @@ def wrap_preserve_newlines(text, width=120, break_long_words=False):
     wrapped_text = "\n".join(wrapped_lines)
     indent_width = 2
     return textwrap.indent(wrapped_text, " " * indent_width)
-
-
-def markdown_format(description: str):
-    formatted_text = wrap_preserve_newlines(description)
-    highlighted_test = highlight(formatted_text, MarkdownLexer(), TerminalFormatter())
-    return highlighted_test
 
 
 def date_format(date: str):
