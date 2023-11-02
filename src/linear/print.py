@@ -78,6 +78,8 @@ def title_text(issue: Issue):
 
     status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
     title = f"{issue.identifier} - {issue.title} ({status})"
+    if issue.assignee:
+        title += f" ({Fore.MAGENTA}{issue.assignee.name}{Style.RESET_ALL})"
 
     return f"{title}\n"
 
