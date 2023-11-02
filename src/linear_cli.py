@@ -43,23 +43,20 @@ def cmd_team(status: Optional[str], json: bool):
     else:
         printer = linear.print.ConsolePrinter(include_comments=False)
 
-    my_teams = []
-    for team in me.teams:
-        my_teams.append(linear.get_team(team.id))
+    if not me.teams:
+        LOGGER.error("You are not a member of any teams")
+        sys.exit(1)
 
     issue_states = [status] if status else linear.ISSUE_STATES
 
-    issues = sorted(
-        [
-            issue
-            for team in my_teams
-            for issue in team.issues
-            if issue.state.type in issue_states
-        ],
-        key=lambda issue: issue.state.name,
-    )
+    for team in me.teams:
+        team_issues = linear.get_team(team.id).issues
+        issues = sorted(
+            [issue for issue in team_issues if issue.state.type in issue_states],
+            key=lambda issue: issue.state.name,
+        )
 
-    printer.print_issue_list(issues)
+        printer.print_issue_list(issues)
 
 
 @click.group("issue")

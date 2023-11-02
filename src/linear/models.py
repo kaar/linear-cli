@@ -143,7 +143,7 @@ class Issue:
 class Team:
     id: str
     name: str
-    issues: Optional[list[Issue]]
+    issues: list[Issue]
 
     @staticmethod
     def gql_fields(include_issues=False) -> str:
