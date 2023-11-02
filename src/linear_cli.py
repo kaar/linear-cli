@@ -3,6 +3,7 @@ import os
 import sys
 import webbrowser
 from collections import defaultdict
+from typing import Optional
 
 import click
 
@@ -25,6 +26,40 @@ def setup_logging():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     LOGGER.debug("Debug mode enabled")
+
+
+@click.command("team")
+@click.option("--json", is_flag=True)
+@click.option("--status", type=click.Choice(linear.ISSUE_STATES), default=None)
+def cmd_team(status: Optional[str], json: bool):
+    """
+    linear team
+    """
+    me = linear.get_me()
+
+    printer = None
+    if json:
+        printer = linear.print.JsonPrinter(sys.stdout)
+    else:
+        printer = linear.print.ConsolePrinter(include_comments=False)
+
+    my_teams = []
+    for team in me.teams:
+        my_teams.append(linear.get_team(team.id))
+
+    issue_states = [status] if status else linear.ISSUE_STATES
+
+    issues = sorted(
+        [
+            issue
+            for team in my_teams
+            for issue in team.issues
+            if issue.state.type in issue_states
+        ],
+        key=lambda issue: issue.state.name,
+    )
+
+    printer.print_issue_list(issues)
 
 
 @click.group("issue")
@@ -121,5 +156,6 @@ def cli():
 
 
 cli.add_command(cmd_issue)
+cli.add_command(cmd_team)
 if __name__ == "__main__":
     cli()

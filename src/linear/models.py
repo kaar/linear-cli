@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 from typing import Optional
 
+ISSUE_STATES = [
+    "backlog",
+    "completed",
+    "started",
+    "unstarted",
+    "canceled",
+]
+
 
 @dataclass
 class LinearErrorMessage:
@@ -124,6 +132,42 @@ class Issue:
 
 
 @dataclass
+class Team:
+    id: str
+    name: str
+    issues: Optional[list[Issue]]
+
+    @staticmethod
+    def gql_fields(include_issues=False) -> str:
+        if include_issues:
+            return """
+                id
+                name
+                issues {
+                    nodes {
+                        %s
+                    }
+                }
+            """ % (
+                Issue.gql_fields(include_children=False)
+            )
+        else:
+            return """
+                id
+                name
+            """
+
+    @staticmethod
+    def from_gql(team: dict) -> "Team":
+        issues = team.get("issues", {}).get("nodes", [])
+        return Team(
+            id=team["id"],
+            name=team["name"],
+            issues=[Issue.from_gql(issue) for issue in issues],
+        )
+
+
+@dataclass
 class User:
     id: str
     name: str
@@ -131,6 +175,10 @@ class User:
     assigned_issues: list[Issue]
     """
     Issues assigned to the user.
+    """
+    teams: list[Team]
+    """
+    List of teams the user is a member of.
     """
 
     @staticmethod
@@ -154,7 +202,16 @@ class User:
                     }
                 }
             }
-        """
+            teamMemberships {
+                nodes {
+                    team {
+                        %s
+                    }
+                }
+            }
+        """ % (
+            Team.gql_fields(include_issues=False)
+        )
 
     @staticmethod
     def from_gql(viewer: dict) -> "User":
@@ -164,5 +221,9 @@ class User:
             email=viewer["email"],
             assigned_issues=[
                 Issue.from_gql(issue) for issue in viewer["assignedIssues"]["nodes"]
+            ],
+            teams=[
+                Team.from_gql(team["team"])
+                for team in viewer["teamMemberships"]["nodes"]
             ],
         )

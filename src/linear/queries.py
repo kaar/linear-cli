@@ -1,7 +1,7 @@
 from xdg import XDGAppCache
 
 from . import gql
-from .models import Issue, User
+from .models import Issue, Team, User
 
 APP_CACHE = XDGAppCache("linear")
 
@@ -43,3 +43,18 @@ def get_me() -> User:
     APP_CACHE.save(query, data)
 
     return User.from_gql(data["data"]["viewer"])
+
+
+def get_team(team_id: str):
+    query = """
+    query Team {
+      team(id: "%s") {
+          %s
+      }
+    }
+    """ % (
+        team_id,
+        Team.gql_fields(include_issues=True),
+    )
+    data = gql.request(query)
+    return Team.from_gql(data["data"]["team"])

@@ -1,6 +1,6 @@
 from . import print
-from .models import Issue, User, WorkflowState
-from .queries import get_issue, get_me
+from .models import ISSUE_STATES, Issue, Team, User, WorkflowState
+from .queries import get_issue, get_me, get_team
 
 __all__ = [
     "User",
@@ -9,4 +9,7 @@ __all__ = [
     "get_issue",
     "get_me",
     "print",
+    "get_team",
+    "Team",
+    "ISSUE_STATES",
 ]
