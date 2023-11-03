@@ -16,3 +16,9 @@ test:
 
 clean: pipx-uninstall
 .PHONY: clean
+
+build: clean
+	poetry build
+
+release: build test
+	gh release create v$(VERSION) --generate-notes
