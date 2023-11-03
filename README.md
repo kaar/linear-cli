@@ -5,6 +5,7 @@
 ## Install
 
 Requires `LINEAR_API_KEY`
+https://linear.app/tibber/settings/api
 
 ```bash
 pipx install git+https://github.com/kaar/linear-cli
