@@ -1,5 +1,7 @@
 # Linear CLI
 
+[![asciicast](https://asciinema.org/a/619030.png)](https://asciinema.org/a/619030)
+
 ## Install
 
 Requires `LINEAR_API_KEY`
