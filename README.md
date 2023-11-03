@@ -11,10 +11,10 @@ pipx install git+https://github.com/kaar/linear-cli
 ## Usage
 
 ```bash
-linear-cli issue list
-linear-cli issue view TRA-383
-linear-cli team
-linear-cli team --status backlog
+li issue list
+li issue view TRA-383
+li team
+li team --status backlog
 ```
 
 ## Development
