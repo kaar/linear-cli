@@ -19,7 +19,7 @@ pygments = "^2.16.1"
 click = "^8.1.7"
 
 [tool.poetry.scripts]
-linear-cli = "linear_cli:cli"
+li = "linear_cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
