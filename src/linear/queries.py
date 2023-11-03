@@ -56,5 +56,8 @@ def get_team(team_id: str):
         team_id,
         Team.gql_fields(include_issues=True),
     )
+    if data := APP_CACHE.load(query):
+        return Team.from_gql(data["data"]["team"])
     data = gql.request(query)
+    APP_CACHE.save(query, data)
     return Team.from_gql(data["data"]["team"])
