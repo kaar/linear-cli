@@ -36,12 +36,11 @@ def cmd_team(status: Optional[str], json: bool):
     linear team
     """
     me = linear.get_me()
-
     printer = None
     if json:
         printer = linear.print.JsonPrinter(sys.stdout)
     else:
-        printer = linear.print.ConsolePrinter(include_comments=False)
+        printer = linear.print.ConsolePrinter()
 
     if not me.teams:
         LOGGER.error("You are not a member of any teams")
@@ -106,16 +105,15 @@ def cmd_issue_list(state, json: bool):
     if json:
         printer = linear.print.JsonPrinter(sys.stdout)
     else:
-        printer = linear.print.ConsolePrinter(include_comments=False)
+        printer = linear.print.ConsolePrinter()
     printer.print_issue_list(issues_to_print)
 
 
 @cmd_issue.command("view")
 @click.argument("issue_id", type=str)
 @click.option("--web", is_flag=True)
-@click.option("--comments", is_flag=True)
 @click.option("--json", is_flag=True)
-def cmd_issue_view(issue_id: str, web: bool, comments: bool, json: bool):
+def cmd_issue_view(issue_id: str, web: bool, json: bool):
     """
     linear issue view <issue_id>
 
@@ -142,7 +140,7 @@ def cmd_issue_view(issue_id: str, web: bool, comments: bool, json: bool):
     if json:
         printer = linear.print.JsonPrinter(sys.stdout)
     else:
-        printer = linear.print.ConsolePrinter(include_comments=comments)
+        printer = linear.print.ConsolePrinter()
 
     printer.print_issue(issue)
 

@@ -38,9 +38,8 @@ class JsonPrinter(Printer):
 
 
 class ConsolePrinter(Printer):
-    def __init__(self, include_comments: bool):
+    def __init__(self):
         colorama.init()
-        self.include_comments = include_comments
 
     def print_issue_list(self, issues: list[Issue]):
         text = ""
@@ -57,7 +56,7 @@ class ConsolePrinter(Printer):
         print(text, end="")
 
     def print_issue(self, issue: Issue):
-        text = issue_text(issue, self.include_comments)
+        text = issue_text(issue)
         print(text, end="")
 
 
@@ -78,7 +77,7 @@ def title_text(issue: Issue):
     return f"{title}\n"
 
 
-def issue_text(issue: Issue, show_comments):
+def issue_text(issue: Issue):
     text = title_text(issue)
 
     if issue.description:
@@ -94,22 +93,14 @@ def issue_text(issue: Issue, show_comments):
             text += subissue_text
 
     if issue.comments:
-        comment_text = ""
-        if show_comments:
-            comment_text = "\n"
-            for comment in issue.comments:
-                comment_text += (
-                    f"{Fore.BLUE}"
-                    f"{comment.user_name}{date_format(comment.created_at)}"
-                    f"{Style.RESET_ALL}\n"
-                )
-                comment_text += highlight.markdown(comment.body)
-        else:
-            comment_text = (
-                f"{Fore.RED}"
-                f"--- Not showing {len(issue.comments)} comments ---"
-                f"{Style.RESET_ALL}"
+        comment_text = "\n"
+        for comment in issue.comments:
+            comment_text += (
+                f"{Fore.BLUE}"
+                f"{comment.user_name}{date_format(comment.created_at)}"
+                f"{Style.RESET_ALL}\n"
             )
+            comment_text += highlight.markdown(comment.body)
 
         text += f"{comment_text}\n"
 
