@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 import webbrowser
-from collections import defaultdict
 from typing import Optional
 
 import click
@@ -11,10 +10,6 @@ import linear
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LOGGER = logging.getLogger(__name__)
-
-OPEN_STATES = ["In Progress", "Under review"]
-CLOSED_STATES = ["Done"]
-ALL_STATES = OPEN_STATES + CLOSED_STATES
 
 
 def setup_logging():
@@ -66,47 +61,31 @@ def cmd_issue():
 
 
 @cmd_issue.command("list")
-@click.option(
-    "-s",
-    "--state",
-    type=click.Choice(["open", "closed", "all"]),
-    default="open",
-    help='Filter by state: {open|closed|all} (default "open")',
-)
+@click.option("--status", type=click.Choice(linear.ISSUE_STATES), default=None)
 @click.option("--json", is_flag=True)
-def cmd_issue_list(state, json: bool):
+def cmd_issue_list(status: str, json: bool):
     """
     List linear issues assigned to you
     """
 
-    match state:
-        case "open":
-            selected_states = OPEN_STATES
-        case "closed":
-            selected_states = CLOSED_STATES
-        case _:
-            selected_states = ALL_STATES
-
+    issue_states = [status] if status else ["backlog", "started", "unstarted"]
     me = linear.get_me()
 
-    # Group issues by `issue.state.name`
-    issues_by_state = defaultdict(list)
-    for item in me.assigned_issues:
-        issues_by_state[item.state.name].append(item)
+    if me.assigned_issues is None:
+        print("No issues assigned to you")
+        return
 
-    issues_to_print = [
-        issue
-        for state, issues in issues_by_state.items()
-        if state in selected_states
-        for issue in issues
-    ]
+    issues = sorted(
+        [issue for issue in me.assigned_issues if issue.state.type in issue_states],
+        key=lambda issue: issue.state.name,
+    )
 
     printer = None
     if json:
         printer = linear.print.JsonPrinter(sys.stdout)
     else:
         printer = linear.print.ConsolePrinter()
-    printer.print_issue_list(issues_to_print)
+    printer.print_issue_list(issues)
 
 
 @cmd_issue.command("view")
