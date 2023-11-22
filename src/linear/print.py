@@ -62,6 +62,7 @@ class ConsolePrinter(Printer):
 
 def title_text(issue: Issue):
     status_color = {
+        "triage": Fore.CYAN,
         "backlog": Fore.CYAN,
         "completed": Fore.GREEN,
         "started": Fore.YELLOW,
