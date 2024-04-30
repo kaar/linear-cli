@@ -13,15 +13,15 @@ ISSUE_STATES = [
 @dataclass
 class LinearErrorMessage:
     message: str
-    locations: list[dict[str, int]]
     extensions: dict[str, str]
+    locations: Optional[list[dict[str, int]]] = None
 
     @staticmethod
     def from_gql(error: dict) -> "LinearErrorMessage":
         return LinearErrorMessage(
             message=error["message"],
-            locations=error["locations"],
             extensions=error["extensions"],
+            locations=error.get("locations"),
         )
 
 
@@ -123,9 +123,11 @@ class Issue:
                 name=issue["state"]["name"],
                 type=issue["state"]["type"],
             ),
-            children=[Issue.from_gql(child) for child in issue["children"]["nodes"]]
-            if has_children
-            else [],
+            children=(
+                [Issue.from_gql(child) for child in issue["children"]["nodes"]]
+                if has_children
+                else []
+            ),
             comments=[
                 Comment(
                     id=comment["id"],
@@ -230,15 +232,17 @@ class User:
             id=viewer["id"],
             name=viewer["name"],
             email=viewer["email"],
-            teams=[
-                Team.from_gql(team["team"])
-                for team in viewer["teamMemberships"]["nodes"]
-            ]
-            if has_teams
-            else None,
-            assigned_issues=[
-                Issue.from_gql(issue) for issue in viewer["assignedIssues"]["nodes"]
-            ]
-            if has_assigned_issues
-            else None,
+            teams=(
+                [
+                    Team.from_gql(team["team"])
+                    for team in viewer["teamMemberships"]["nodes"]
+                ]
+                if has_teams
+                else None
+            ),
+            assigned_issues=(
+                [Issue.from_gql(issue) for issue in viewer["assignedIssues"]["nodes"]]
+                if has_assigned_issues
+                else None
+            ),
         )
