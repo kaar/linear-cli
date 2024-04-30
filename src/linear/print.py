@@ -19,11 +19,9 @@ class CustomEncoder(json.JSONEncoder):
 
 
 class Printer(t.Protocol):
-    def print_issue_list(self, issues: list[Issue]):
-        ...
+    def print_issue_list(self, issues: list[Issue]): ...
 
-    def print_issue(self, issue: Issue):
-        ...
+    def print_issue(self, issue: Issue): ...
 
 
 class JsonPrinter(Printer):
