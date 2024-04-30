@@ -45,12 +45,12 @@ class ConsolePrinter(Printer):
         for issue in issues:
             text += title_text(issue)
 
-        # if show_subissues := issue.children:
-        #     text += "Sub-issues:\n"
-        #     # print("Sub-issues:")
-        #     for subissue in show_subissues:
-        #         subissue_text = subissue_as_formatted_text(subissue)
-        #         text += subissue_text
+            # Sort the sub_issues by state
+            sub_issues = sorted(issue.children, key=lambda x: x.state.name)
+
+            for subissue in sub_issues:
+                text += f"  {title_text(subissue)}"
+
         print(text, end="")
 
     def print_issue(self, issue: Issue):

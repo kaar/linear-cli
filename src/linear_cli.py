@@ -76,7 +76,12 @@ def cmd_issue_list(status: str, json: bool):
         return
 
     issues = sorted(
-        [issue for issue in me.assigned_issues if issue.state.type in issue_states],
+        [
+            # I need to fetch the issue to be able to load sub issues
+            linear.get_issue(issue.id)
+            for issue in me.assigned_issues
+            if issue.state.type in issue_states
+        ],
         key=lambda issue: issue.state.name,
     )
 
