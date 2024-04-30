@@ -17,7 +17,7 @@ pipx install git+https://github.com/kaar/linear-cli
 li issue list
 li issue view TRA-383
 li team
-li team --status backlog
+li team --state backlog
 ```
 
 ## Development

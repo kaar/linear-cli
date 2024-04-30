@@ -25,8 +25,8 @@ def setup_logging():
 
 @click.command("team")
 @click.option("--json", is_flag=True)
-@click.option("--status", type=click.Choice(linear.ISSUE_STATES), default=None)
-def cmd_team(status: Optional[str], json: bool):
+@click.option("--state", type=click.Choice(linear.ISSUE_STATES), default=None)
+def cmd_team(state: Optional[str], json: bool):
     """
     linear team
     """
@@ -41,7 +41,7 @@ def cmd_team(status: Optional[str], json: bool):
         LOGGER.error("You are not a member of any teams")
         sys.exit(1)
 
-    issue_states = [status] if status else linear.ISSUE_STATES
+    issue_states = [state] if state else linear.ISSUE_STATES
 
     for team in me.teams:
         team_issues = linear.get_team(team.id).issues
@@ -61,14 +61,14 @@ def cmd_issue():
 
 
 @cmd_issue.command("list")
-@click.option("--status", type=click.Choice(linear.ISSUE_STATES), default=None)
+@click.option("--state", type=click.Choice(linear.ISSUE_STATES), default=None)
 @click.option("--json", is_flag=True)
-def cmd_issue_list(status: str, json: bool):
+def cmd_issue_list(state: str, json: bool):
     """
     List linear issues assigned to you
     """
 
-    issue_states = [status] if status else ["backlog", "started", "unstarted"]
+    issue_states = [state] if state else ["backlog", "started", "unstarted"]
     me = linear.get_me()
 
     if me.assigned_issues is None:
