@@ -13,15 +13,15 @@ ISSUE_STATES = [
 @dataclass
 class LinearErrorMessage:
     message: str
-    locations: list[dict[str, int]]
     extensions: dict[str, str]
+    locations: Optional[list[dict[str, int]]] = None
 
     @staticmethod
     def from_gql(error: dict) -> "LinearErrorMessage":
         return LinearErrorMessage(
             message=error["message"],
-            locations=error["locations"],
             extensions=error["extensions"],
+            locations=error.get("locations"),
         )
 
 
