@@ -41,6 +41,19 @@ class Comment:
 
 
 @dataclass
+class IssueRelation:
+    id: str
+    type: str
+
+    @staticmethod
+    def from_gql(relation: dict) -> "IssueRelation":
+        return IssueRelation(
+            id=relation["id"],
+            type=relation["type"],
+        )
+
+
+@dataclass
 class Issue:
     id: str
 
@@ -61,6 +74,7 @@ class Issue:
     children: list["Issue"]
     comments: Optional[list["Comment"]]
     assignee: Optional["User"] = None
+    relations: Optional[list[IssueRelation]] = None
 
     @staticmethod
     def gql_fields(include_children=False) -> str:
@@ -102,6 +116,12 @@ class Issue:
                     }
                 }
             }
+            relations {
+                nodes {
+                    id
+                    type
+                }
+            }
             %s
         """ % (
             children_query
@@ -136,6 +156,10 @@ class Issue:
                     user_name=comment["user"]["name"],
                 )
                 for comment in issue.get("comments", {}).get("nodes", [])
+            ],
+            relations=[
+                IssueRelation.from_gql(relation)
+                for relation in issue.get("relations", {}).get("nodes", [])
             ],
             assignee=User.from_gql(issue["assignee"]) if has_assignee else None,
         )
