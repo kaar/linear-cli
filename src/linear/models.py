@@ -74,9 +74,7 @@ class Issue:
                         %s
                     }
                 }
-            """ % (
-                Issue.gql_fields()
-            )
+            """ % (Issue.gql_fields())
         return """
             id
             identifier
@@ -108,9 +106,7 @@ class Issue:
                 }
             }
             %s
-        """ % (
-            children_query
-        )
+        """ % (children_query)
 
     @staticmethod
     def from_gql(issue: dict) -> "Issue":
@@ -164,9 +160,7 @@ class Team:
                         %s
                     }
                 }
-            """ % (
-                Issue.gql_fields(include_children=False)
-            )
+            """ % (Issue.gql_fields(include_children=False))
         else:
             return """
                 id
@@ -226,9 +220,7 @@ class User:
                     }
                 }
             }
-        """ % (
-            Team.gql_fields(include_issues=False)
-        )
+        """ % (Team.gql_fields(include_issues=False))
 
     @staticmethod
     def from_gql(viewer: dict) -> "User":

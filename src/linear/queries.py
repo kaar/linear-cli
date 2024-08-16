@@ -33,9 +33,7 @@ def get_me() -> User:
             %s
         }
     }
-    """ % (
-        User.gql_fields()
-    )
+    """ % (User.gql_fields())
 
     if data := APP_CACHE.load(query):
         return User.from_gql(data["data"]["viewer"])
