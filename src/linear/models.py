@@ -38,7 +38,7 @@ class Comment:
     id: str
     body: str
     created_at: datetime
-    user_name: str
+    user_name: Optional[str] = None
     parent_id: Optional[str] = None
 
 
@@ -134,7 +134,7 @@ class Issue:
                     id=comment["id"],
                     body=comment["body"],
                     created_at=datetime.fromisoformat(comment["createdAt"]),
-                    user_name=comment["user"]["name"],
+                    user_name=comment["user"]["name"] if comment["user"] else None,
                     parent_id=comment["parent"]["id"] if comment["parent"] else None,
                 )
                 for comment in issue.get("comments", {}).get("nodes", [])
