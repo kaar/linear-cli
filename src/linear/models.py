@@ -1,3 +1,4 @@
+from datetime import datetime
 from dataclasses import dataclass
 from typing import Optional
 
@@ -36,8 +37,9 @@ class WorkflowState:
 class Comment:
     id: str
     body: str
-    created_at: str
+    created_at: datetime
     user_name: str
+    parent_id: Optional[str] = None
 
 
 @dataclass
@@ -100,6 +102,9 @@ class Issue:
                     user {
                         name
                     }
+                    parent {
+                        id
+                    }
                 }
             }
             %s
@@ -132,8 +137,9 @@ class Issue:
                 Comment(
                     id=comment["id"],
                     body=comment["body"],
-                    created_at=comment["createdAt"],
+                    created_at=datetime.fromisoformat(comment["createdAt"]),
                     user_name=comment["user"]["name"],
+                    parent_id=comment["parent"]["id"] if comment["parent"] else None,
                 )
                 for comment in issue.get("comments", {}).get("nodes", [])
             ],

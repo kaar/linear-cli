@@ -93,15 +93,29 @@ def issue_text(issue: Issue):
 
     if issue.comments:
         comment_text = "\n"
-        for comment in issue.comments:
+        comments = sorted(issue.comments, key=lambda x: x.created_at)
+        for comment in comments:
+            # Skip replies
+            if comment.parent_id:
+                continue
             comment_text += (
                 f"{Fore.BLUE}"
-                f"{comment.user_name}{date_format(comment.created_at)}"
+                f"@{comment.user_name}{date_format(comment.created_at)}"
                 f"{Style.RESET_ALL}\n"
             )
-            comment_text += highlight.markdown(comment.body)
-
-        text += f"{comment_text}\n"
+            comment_text += f"{highlight.markdown(comment.body)}\n"
+            replies = [
+                reply for reply in issue.comments if reply.parent_id == comment.id
+            ]
+            for reply in replies:
+                comment_text += (
+                    f"{Fore.LIGHTBLUE_EX}"
+                    f"@{reply.user_name}{date_format(reply.created_at)}"
+                    f"{Style.RESET_ALL}\n"
+                )
+                # TODO: Indent the whole reply by 4 spaces
+                comment_text += f"    {reply.body}\n\n"
+        text += f"\n{comment_text}\n"
 
     url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
     text += f"{url}\n"
@@ -120,9 +134,8 @@ def wrap_preserve_newlines(text, width=120, break_long_words=False):
     return textwrap.indent(wrapped_text, " " * indent_width)
 
 
-def date_format(date: str):
-    datetime_parsed = datetime.fromisoformat(date)
-    return f" ({datetime_parsed.strftime('%Y-%m-%d - %H:%M:%S')})"
+def date_format(date: datetime):
+    return f" ({date.strftime('%Y-%m-%d - %H:%M:%S')})"
 
 
 def subissue_as_formatted_text(issue: Issue):
