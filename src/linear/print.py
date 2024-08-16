@@ -6,6 +6,7 @@ from datetime import datetime
 
 import colorama
 from colorama import Fore, Style
+from tabulate import tabulate
 
 from . import highlight
 from .models import Issue
@@ -35,6 +36,31 @@ class JsonPrinter(Printer):
 
     def print_issue(self, issue: Issue):
         json.dump(issue, self.out, cls=CustomEncoder, indent=2)
+
+
+class TablePrinter(Printer):
+    def print_issue_list(self, issues: list[Issue]):
+        data = [
+            [
+                issue.identifier,
+                issue.title,
+                issue.state.name,
+                issue.assignee.name if issue.assignee else "Unassigned",
+            ]
+            for issue in issues
+        ]
+        headers = ["ID", "Title", "State", "Assignee"]
+        return print(tabulate(data, headers=headers))
+
+    def print_issue(self, issue: Issue):
+        data = {
+            "ID": issue.identifier,
+            "Title": issue.title,
+            "State": issue.state.name,
+            "Assignee": issue.assignee.name if issue.assignee else "Unassigned",
+            "Description": issue.description,
+        }
+        return print(tabulate(data.items()))
 
 
 class ConsolePrinter(Printer):

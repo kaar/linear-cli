@@ -25,8 +25,9 @@ def setup_logging():
 
 @click.command("team")
 @click.option("--json", is_flag=True)
+@click.option("--table", is_flag=True)
 @click.option("--state", type=click.Choice(linear.ISSUE_STATES), default=None)
-def cmd_team(state: Optional[str], json: bool):
+def cmd_team(state: Optional[str], json: bool, table: bool):
     """
     linear team
     """
@@ -34,6 +35,8 @@ def cmd_team(state: Optional[str], json: bool):
     printer = None
     if json:
         printer = linear.print.JsonPrinter(sys.stdout)
+    elif table:
+        printer = linear.print.TablePrinter()
     else:
         printer = linear.print.ConsolePrinter()
 
