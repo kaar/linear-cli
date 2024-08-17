@@ -32,10 +32,12 @@ class JsonPrinter(Printer):
         self.out = out
 
     def print_issue_list(self, issues: list[Issue]):
-        json.dump(issues, self.out, cls=CustomEncoder, indent=2)
+        json.dump(issues, self.out, cls=CustomEncoder)
+        self.out.write("\n")
 
     def print_issue(self, issue: Issue):
-        json.dump(issue, self.out, cls=CustomEncoder, indent=2)
+        json.dump(issue, self.out, cls=CustomEncoder)
+        self.out.write("\n")
 
 
 class TablePrinter(Printer):
