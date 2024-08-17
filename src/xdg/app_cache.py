@@ -1,61 +1,39 @@
-import hashlib
 import json
 import os
 import time
+from pathlib import Path
 from typing import Optional
 
-from .constants import XDG_CACHE_HOME
+
+XDG_CACHE_HOME = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+DEFAULT_CACHE_LIMIT = 30
+
+
+def cache_file(app_name: str, key: str) -> Path:
+    return Path(XDG_CACHE_HOME, app_name, f"{key}.json")
+
+
+def load_json_cache_file(path: Path, ttl: int = DEFAULT_CACHE_LIMIT) -> Optional[dict]:
+    if not path.exists():
+        return None
+    creation_time = path.stat().st_mtime
+    if time.time() - creation_time > ttl:
+        path.unlink()
+        return None
+    return json.loads(path.read_text())
+
+
+def dump_json_cache_file(path: Path, data: dict):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data))
 
 
 class XDGAppCache:
-    """
-    A cache for application data.
-
-    The cache is stored in the XDG cache directory. (XDG_CACHE_HOME)
-    Creates a directory for the application if it does not exist.
-    """
-
-    DEFAULT_CACHE_LIMIT = 30
-
     def __init__(self, app_name: str):
-        """
-        Initialize the cache by creating the application directory under
-        `XDG_CACHE_HOME/app_name`.
-
-        Args:
-            app_name: The name of the application.
-        """
         self.app_name = app_name
 
     def load(self, key: str, ttl: int = DEFAULT_CACHE_LIMIT) -> Optional[dict]:
-        """
-        Load a cached query.
-
-        Args:
-            query: The query to load.
-            ttl: The time to live of the cache in seconds.
-        """
-        path = os.path.join(XDG_CACHE_HOME, self.app_name, f"{key}.json")
-
-        if os.path.exists(path):
-            creation_time = os.path.getctime(path)
-            if time.time() - creation_time > ttl:
-                os.remove(path)
-                return
-            else:
-                with open(path, "r") as f:
-                    return json.load(f)
+        return load_json_cache_file(cache_file(self.app_name, key), ttl)
 
     def save(self, key: str, data: dict):
-        """
-        Save a query to cache.
-
-        Args:
-            query: The query to save.
-            data: The data to save.
-        """
-        path = os.path.join(XDG_CACHE_HOME, self.app_name, f"{key}.json")
-
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as f:
-            json.dump(data, f)
+        dump_json_cache_file(cache_file(self.app_name, key), data)
