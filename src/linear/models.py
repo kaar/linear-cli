@@ -41,6 +41,30 @@ class Comment:
     user_name: Optional[str] = None
     parent_id: Optional[str] = None
 
+    @staticmethod
+    def gql_fields() -> str:
+        return """
+            id
+            body
+            createdAt
+            user {
+                name
+            }
+            parent {
+                id
+            }
+        """
+
+    @staticmethod
+    def from_gql(comment: dict) -> "Comment":
+        return Comment(
+            id=comment["id"],
+            body=comment["body"],
+            created_at=datetime.fromisoformat(comment["createdAt"]),
+            user_name=comment["user"]["name"] if comment["user"] else None,
+            parent_id=comment["parent"]["id"] if comment["parent"] else None,
+        )
+
 
 @dataclass
 class Issue:
@@ -94,19 +118,11 @@ class Issue:
             }
             comments {
                 nodes {
-                    id
-                    body
-                    createdAt
-                    user {
-                        name
-                    }
-                    parent {
-                        id
-                    }
+                    %s
                 }
             }
             %s
-        """ % (children_query)
+        """ % (Comment.gql_fields(), children_query)
 
     @staticmethod
     def from_gql(issue: dict) -> "Issue":
@@ -130,14 +146,7 @@ class Issue:
                 else []
             ),
             comments=[
-                Comment(
-                    id=comment["id"],
-                    body=comment["body"],
-                    created_at=datetime.fromisoformat(comment["createdAt"]),
-                    user_name=comment["user"]["name"] if comment["user"] else None,
-                    parent_id=comment["parent"]["id"] if comment["parent"] else None,
-                )
-                for comment in issue.get("comments", {}).get("nodes", [])
+                Comment.from_gql(comment) for comment in issue["comments"]["nodes"]
             ],
             assignee=User.from_gql(issue["assignee"]) if has_assignee else None,
         )
