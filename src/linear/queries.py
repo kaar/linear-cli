@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 from xdg import XDGAppCache
 
@@ -10,7 +9,7 @@ from .models import Issue, Team, User
 APP_CACHE = XDGAppCache("linear")
 
 
-def cache_load(query: str):
+def cache_load(query: str) -> dict | None:
     query_hash = hashlib.sha256(query.encode("utf-8")).hexdigest()
     return APP_CACHE.load(query_hash)
 
