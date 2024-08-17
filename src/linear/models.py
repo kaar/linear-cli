@@ -17,9 +17,9 @@ class LinearErrorMessage:
     extensions: dict[str, str]
     locations: Optional[list[dict[str, int]]] = None
 
-    @staticmethod
-    def from_gql(error: dict) -> "LinearErrorMessage":
-        return LinearErrorMessage(
+    @classmethod
+    def from_gql(cls, error: dict) -> "LinearErrorMessage":
+        return cls(
             message=error["message"],
             extensions=error["extensions"],
             locations=error.get("locations"),
@@ -55,9 +55,9 @@ class Comment:
             }
         """
 
-    @staticmethod
-    def from_gql(comment: dict) -> "Comment":
-        return Comment(
+    @classmethod
+    def from_gql(cls, comment: dict) -> "Comment":
+        return cls(
             id=comment["id"],
             body=comment["body"],
             created_at=datetime.fromisoformat(comment["createdAt"]),
@@ -124,11 +124,11 @@ class Issue:
             %s
         """ % (Comment.gql_fields(), children_query)
 
-    @staticmethod
-    def from_gql(issue: dict) -> "Issue":
+    @classmethod
+    def from_gql(cls, issue: dict) -> "Issue":
         has_children = "children" in issue
         has_assignee = "assignee" in issue and issue["assignee"] is not None
-        return Issue(
+        return cls(
             id=issue["id"],
             identifier=issue["identifier"],
             title=issue["title"],
@@ -176,10 +176,10 @@ class Team:
                 name
             """
 
-    @staticmethod
-    def from_gql(team: dict) -> "Team":
+    @classmethod
+    def from_gql(cls, team: dict) -> "Team":
         issues = team.get("issues", {}).get("nodes", [])
-        return Team(
+        return cls(
             id=team["id"],
             name=team["name"],
             issues=[Issue.from_gql(issue) for issue in issues],
@@ -231,11 +231,11 @@ class User:
             }
         """ % (Team.gql_fields(include_issues=False))
 
-    @staticmethod
-    def from_gql(viewer: dict) -> "User":
+    @classmethod
+    def from_gql(cls, viewer: dict) -> "User":
         has_assigned_issues = "assignedIssues" in viewer
         has_teams = "teamMemberships" in viewer
-        return User(
+        return cls(
             id=viewer["id"],
             name=viewer["name"],
             email=viewer["email"],
