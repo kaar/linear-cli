@@ -146,7 +146,8 @@ class Issue:
                 else []
             ),
             comments=[
-                Comment.from_gql(comment) for comment in issue["comments"]["nodes"]
+                Comment.from_gql(comment)
+                for comment in issue.get("comments", {}).get("nodes", [])
             ],
             assignee=User.from_gql(issue["assignee"]) if has_assignee else None,
         )
