@@ -9,7 +9,7 @@ from colorama import Fore, Style
 from tabulate import tabulate
 
 from . import highlight
-from .models import Issue
+from .client import Issue
 
 
 class CustomEncoder(json.JSONEncoder):
