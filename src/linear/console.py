@@ -1,18 +1,20 @@
-import dataclasses
 import json
-import textwrap
-import typing as t
+import dataclasses
 from datetime import datetime
+from typing import Literal
+import textwrap
 
 import colorama
 from colorama import Fore, Style
-from tabulate import tabulate
 
 from . import highlight
 from .client import Issue
+from tabulate import tabulate
+
+colorama.init()
 
 
-class CustomEncoder(json.JSONEncoder):
+class DataclassJsonEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()
@@ -21,71 +23,85 @@ class CustomEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-class Printer(t.Protocol):
-    def print_issue_list(self, issues: list[Issue]): ...
+def print_issues(
+    issues: list[Issue],
+    format: Literal[
+        "json",
+        "table",
+        "markdown",
+    ] = "markdown",
+):
+    if format == "json":
+        print(json.dumps(issues, cls=DataclassJsonEncoder))
+        return
+    if format == "table":
+        print(issues_table(issues))
+        return
+    if format == "markdown":
+        print(issues_markdown(issues))
+        return
 
-    def print_issue(self, issue: Issue): ...
+
+def print_issue(
+    issue: Issue,
+    format: Literal[
+        "json",
+        "table",
+        "markdown",
+    ] = "markdown",
+):
+    if format == "json":
+        print(json.dumps(issue, cls=DataclassJsonEncoder))
+        return
+    if format == "table":
+        print(issue_table(issue))
+        return
+    if format == "markdown":
+        print(issue_markdown(issue), end="")
 
 
-class JsonPrinter(Printer):
-    def __init__(self, out: t.TextIO):
-        self.out = out
-
-    def print_issue_list(self, issues: list[Issue]):
-        json.dump(issues, self.out, cls=CustomEncoder)
-        self.out.write("\n")
-
-    def print_issue(self, issue: Issue):
-        json.dump(issue, self.out, cls=CustomEncoder)
-        self.out.write("\n")
+def issue_markdown(issue: Issue):
+    return issue_text(issue)
 
 
-class TablePrinter(Printer):
-    def print_issue_list(self, issues: list[Issue]):
-        data = [
-            [
-                issue.identifier,
-                issue.title,
-                issue.state.name,
-                issue.assignee.name if issue.assignee else "Unassigned",
-            ]
-            for issue in issues
+def issues_markdown(issues: list[Issue]):
+    text = ""
+
+    for issue in issues:
+        text += title_text(issue)
+
+        # Sort the sub_issues by state
+        sub_issues = sorted(issue.children, key=lambda x: x.state.name)
+
+        for subissue in sub_issues:
+            text += f"  {title_text(subissue)}"
+
+    print(text, end="")
+
+
+def issue_table(issue: Issue):
+    data = {
+        "ID": issue.identifier,
+        "Title": issue.title,
+        "State": issue.state.name,
+        "Assignee": issue.assignee.name if issue.assignee else "Unassigned",
+        "Description": issue.description,
+    }
+    return tabulate(data.items())
+
+
+def issues_table(issues: list[Issue]):
+    data = [
+        [
+            issue.identifier,
+            issue.title,
+            issue.state.name,
+            issue.assignee.name if issue.assignee else "Unassigned",
         ]
-        headers = ["ID", "Title", "State", "Assignee"]
-        return print(tabulate(data, headers=headers))
-
-    def print_issue(self, issue: Issue):
-        data = {
-            "ID": issue.identifier,
-            "Title": issue.title,
-            "State": issue.state.name,
-            "Assignee": issue.assignee.name if issue.assignee else "Unassigned",
-            "Description": issue.description,
-        }
-        return print(tabulate(data.items()))
-
-
-class ConsolePrinter(Printer):
-    def __init__(self):
-        colorama.init()
-
-    def print_issue_list(self, issues: list[Issue]):
-        text = ""
-
-        for issue in issues:
-            text += title_text(issue)
-
-            # Sort the sub_issues by state
-            sub_issues = sorted(issue.children, key=lambda x: x.state.name)
-
-            for subissue in sub_issues:
-                text += f"  {title_text(subissue)}"
-
-        print(text, end="")
-
-    def print_issue(self, issue: Issue):
-        text = issue_text(issue)
-        print(text, end="")
+        for issue in issues
+    ]
+    headers = ["ID", "Title", "State", "Assignee"]
+    return tabulate(data, headers=headers)
 
 
 def title_text(issue: Issue):
