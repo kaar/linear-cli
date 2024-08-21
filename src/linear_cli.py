@@ -141,6 +141,33 @@ def cmd_me(state: str, json: bool):
     console.print_me(me, issues, format)
 
 
+@click.command("ls")
+@click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
+@click.option("--json", is_flag=True)
+def cmd_ls(state: str, json: bool):
+    """
+    List linear issues assigned to you
+    """
+    issue_states = [state] if state else ["backlog", "started", "unstarted"]
+    me = get_me()
+
+    if me.assigned_issues is None:
+        # print("No issues assigned to you")
+        return
+
+    issues = sorted(
+        [
+            # I need to fetch the issue to be able to load sub issues
+            get_issue(issue.id)
+            for issue in me.assigned_issues
+            if issue.state.type in issue_states
+        ],
+        key=lambda issue: issue.state.name,
+    )
+    format = "json" if json else "markdown"
+    console.print_issues(issues, format)
+
+
 @click.group()
 def cli():
     setup_logging()
@@ -149,5 +176,6 @@ def cli():
 cli.add_command(cmd_issue)
 cli.add_command(cmd_team)
 cli.add_command(cmd_me)
+cli.add_command(cmd_ls)
 if __name__ == "__main__":
     cli()
