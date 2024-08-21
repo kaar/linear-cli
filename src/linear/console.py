@@ -23,6 +23,15 @@ class DataclassJsonEncoder(json.JSONEncoder):
         return super().default(o)
 
 
+def print_me(me, issues: list[Issue], format):
+    if format == "json":
+        print(json.dumps(issues, cls=DataclassJsonEncoder))
+        return
+    if format == "markdown":
+        print(me_markdown(me, issues))
+        return
+
+
 def print_issues(
     issues: list[Issue],
     format: Literal[
@@ -62,6 +71,23 @@ def print_issue(
 
 def issue_markdown(issue: Issue):
     return issue_text(issue)
+
+
+def me_markdown(_, issues: list[Issue]):
+    text = ""
+
+    for issue in issues:
+        text += title_text(issue)
+        text += description_text(issue.description)
+
+        # Sort the sub_issues by state
+        sub_issues = sorted(issue.children, key=lambda x: x.state.name)
+
+        for subissue in sub_issues:
+            text += f"  {title_text(subissue)}"
+            text += description_text(subissue.description)
+
+    print(text, end="")
 
 
 def issues_markdown(issues: list[Issue]):
@@ -122,13 +148,19 @@ def title_text(issue: Issue):
     return f"{title}\n"
 
 
+def description_text(description: str):
+    if not description:
+        return ""
+    description = description.replace("\n\\", "\n")
+    formatted_description = highlight.markdown(description)
+    return f"\n{formatted_description}"
+
+
 def issue_text(issue: Issue):
     text = title_text(issue)
 
     if issue.description:
-        description = issue.description.replace("\n\\", "\n")
-        formatted_description = highlight.markdown(description)
-        text += f"\n{formatted_description}"
+        text += description_text(issue.description)
 
     if show_subissues := issue.children:
         text += "Sub-issues:\n"
