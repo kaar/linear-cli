@@ -6,7 +6,8 @@ from typing import Optional
 
 import click
 
-import linear
+from linear import print
+from linear.client import get_me, get_team, get_issue, ISSUE_STATES
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LOGGER = logging.getLogger(__name__)
@@ -26,28 +27,28 @@ def setup_logging():
 @click.command("team")
 @click.option("--json", is_flag=True)
 @click.option("--table", is_flag=True)
-@click.option("--state", type=click.Choice(linear.ISSUE_STATES), default=None)
+@click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
 def cmd_team(state: Optional[str], json: bool, table: bool):
     """
     linear team
     """
-    me = linear.get_me()
+    me = get_me()
     printer = None
     if json:
-        printer = linear.print.JsonPrinter(sys.stdout)
+        printer = print.JsonPrinter(sys.stdout)
     elif table:
-        printer = linear.print.TablePrinter()
+        printer = print.TablePrinter()
     else:
-        printer = linear.print.ConsolePrinter()
+        printer = print.ConsolePrinter()
 
     if not me.teams:
         LOGGER.error("You are not a member of any teams")
         sys.exit(1)
 
-    issue_states = [state] if state else linear.ISSUE_STATES
+    issue_states = [state] if state else ISSUE_STATES
 
     for team in me.teams:
-        team_issues = linear.get_team(team.id).issues
+        team_issues = get_team(team.id).issues
         issues = sorted(
             [issue for issue in team_issues if issue.state.type in issue_states],
             key=lambda issue: issue.state.name,
@@ -64,24 +65,23 @@ def cmd_issue():
 
 
 @cmd_issue.command("list")
-@click.option("--state", type=click.Choice(linear.ISSUE_STATES), default=None)
+@click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
 @click.option("--json", is_flag=True)
 def cmd_issue_list(state: str, json: bool):
     """
     List linear issues assigned to you
     """
-
     issue_states = [state] if state else ["backlog", "started", "unstarted"]
-    me = linear.get_me()
+    me = get_me()
 
     if me.assigned_issues is None:
-        print("No issues assigned to you")
+        # print("No issues assigned to you")
         return
 
     issues = sorted(
         [
             # I need to fetch the issue to be able to load sub issues
-            linear.get_issue(issue.id)
+            get_issue(issue.id)
             for issue in me.assigned_issues
             if issue.state.type in issue_states
         ],
@@ -90,9 +90,9 @@ def cmd_issue_list(state: str, json: bool):
 
     printer = None
     if json:
-        printer = linear.print.JsonPrinter(sys.stdout)
+        printer = print.JsonPrinter(sys.stdout)
     else:
-        printer = linear.print.ConsolePrinter()
+        printer = print.ConsolePrinter()
     printer.print_issue_list(issues)
 
 
@@ -118,16 +118,16 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
 
     issue_id = get_issue_id(issue_id)
 
-    issue = linear.get_issue(issue_id)
+    issue = get_issue(issue_id)
     if web:
         webbrowser.open(issue.url)
         return
 
     printer = None
     if json:
-        printer = linear.print.JsonPrinter(sys.stdout)
+        printer = print.JsonPrinter(sys.stdout)
     else:
-        printer = linear.print.ConsolePrinter()
+        printer = print.ConsolePrinter()
 
     printer.print_issue(issue)
 
