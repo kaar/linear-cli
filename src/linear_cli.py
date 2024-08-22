@@ -6,7 +6,7 @@ from typing import Optional
 
 import click
 
-from linear import print
+from linear import console
 from linear.client import get_me, get_team, get_issue, ISSUE_STATES
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
@@ -33,14 +33,6 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
     linear team
     """
     me = get_me()
-    printer = None
-    if json:
-        printer = print.JsonPrinter(sys.stdout)
-    elif table:
-        printer = print.TablePrinter()
-    else:
-        printer = print.ConsolePrinter()
-
     if not me.teams:
         LOGGER.error("You are not a member of any teams")
         sys.exit(1)
@@ -53,8 +45,8 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
             [issue for issue in team_issues if issue.state.type in issue_states],
             key=lambda issue: issue.state.name,
         )
-
-        printer.print_issue_list(issues)
+        format = "json" if json else "table" if table else "markdown"
+        console.print_issues(issues, format)
 
 
 @click.group("issue")
@@ -87,13 +79,8 @@ def cmd_issue_list(state: str, json: bool):
         ],
         key=lambda issue: issue.state.name,
     )
-
-    printer = None
-    if json:
-        printer = print.JsonPrinter(sys.stdout)
-    else:
-        printer = print.ConsolePrinter()
-    printer.print_issue_list(issues)
+    format = "json" if json else "markdown"
+    console.print_issues(issues, format)
 
 
 @cmd_issue.command("view")
@@ -123,13 +110,62 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
         webbrowser.open(issue.url)
         return
 
-    printer = None
-    if json:
-        printer = print.JsonPrinter(sys.stdout)
-    else:
-        printer = print.ConsolePrinter()
+    format = "json" if json else "markdown"
+    console.print_issue(issue, format)
 
-    printer.print_issue(issue)
+
+@click.command("me")
+@click.option("--json", is_flag=True)
+@click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
+def cmd_me(state: str, json: bool):
+    """
+    List linear issues assigned to you
+    """
+    issue_states = [state] if state else ["backlog", "started", "unstarted"]
+    me = get_me()
+
+    if me.assigned_issues is None:
+        # print("No issues assigned to you")
+        return
+
+    issues = sorted(
+        [
+            # I need to fetch the issue to be able to load sub issues
+            get_issue(issue.id)
+            for issue in me.assigned_issues
+            if issue.state.type in issue_states
+        ],
+        key=lambda issue: issue.state.name,
+    )
+    format = "json" if json else "markdown"
+    console.print_me(me, issues, format)
+
+
+@click.command("ls")
+@click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
+@click.option("--json", is_flag=True)
+def cmd_ls(state: str, json: bool):
+    """
+    List linear issues assigned to you
+    """
+    issue_states = [state] if state else ["backlog", "started", "unstarted"]
+    me = get_me()
+
+    if me.assigned_issues is None:
+        # print("No issues assigned to you")
+        return
+
+    issues = sorted(
+        [
+            # I need to fetch the issue to be able to load sub issues
+            get_issue(issue.id)
+            for issue in me.assigned_issues
+            if issue.state.type in issue_states
+        ],
+        key=lambda issue: issue.state.name,
+    )
+    format = "json" if json else "markdown"
+    console.print_issues(issues, format)
 
 
 @click.group()
@@ -139,5 +175,7 @@ def cli():
 
 cli.add_command(cmd_issue)
 cli.add_command(cmd_team)
+cli.add_command(cmd_me)
+cli.add_command(cmd_ls)
 if __name__ == "__main__":
     cli()
