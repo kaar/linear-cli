@@ -1,17 +1,16 @@
-PROJECT_NAME = $(shell poetry version | cut -d' ' -f1)
-VERSION = $(shell poetry version | cut -d' ' -f2)
-SRC = src
+PROJECT_NAME = linear
+VERSION = 1.2.0
 
 pipx-install-editable:
 	pipx install --editable .
 .PHONY: pipx-install-editable
 
 pipx-uninstall:
-	pipx uninstall $(PROJECT_NAME)
+	pipx uninstall linear
 .PHONY: pipx-uninstall
 
 test:
-	poetry run pytest $(SRC)
+	poetry run pytest linear
 .PHONY: test
 
 clean: pipx-uninstall
