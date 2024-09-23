@@ -168,6 +168,55 @@ class User:
             ),
         )
 
+    def create_issue(
+        self,
+        title: str,
+        description: Optional[str] = None,
+        team_id: Optional[str] = None,
+        label_id: Optional[str] = None,
+        assignee_id: Optional[str] = None,
+    ) -> Issue:
+        query = """
+        mutation CreateIssue {
+            createIssue(input: {
+                title: "%s"
+                description: "%s"
+                teamId: "%s"
+                labelIds: %s
+                assigneeId: "%s"
+            }) {
+                issue {
+                    id
+                    identifier
+                    title
+                    createdAt
+                    description
+                    url
+                    assignee {
+                        id
+                        name
+                        email
+                    }
+                    state {
+                      id
+                      name
+                      type
+                    }
+                }
+            }
+        }
+        """ % (
+            title,
+            description,
+            team_id,
+            json.dumps(label_id),
+            assignee_id,
+        )
+        # data = gql_request(query)
+        print(query)
+        return []
+        return Issue.from_dict(data["data"]["createIssue"]["issue"])
+
 
 LINEAR_URL = "https://api.linear.app/graphql"
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
