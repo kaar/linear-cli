@@ -82,6 +82,25 @@ class Comment:
 
 
 @dataclass
+class Attachment:
+    """
+    Links to external resources attached to an issue like GitHub PRs or
+    Slack threads.
+    """
+    id: str
+    title: str
+    url: str
+
+    @classmethod
+    def from_dict(cls, attachment: dict) -> "Attachment":
+        return cls(
+            id=attachment["id"],
+            title=attachment["title"],
+            url=attachment["url"],
+        )
+
+
+@dataclass
 class Issue:
     id: str
     identifier: str
@@ -95,6 +114,7 @@ class Issue:
     children: list["Issue"]
     comments: Optional[list["Comment"]]
     assignee: Optional["User"] = None
+    attachments: Optional[list["Attachment"]] = None
 
     @classmethod
     def from_dict(cls, issue: dict) -> "Issue":
@@ -118,6 +138,10 @@ class Issue:
                 for comment in issue.get("comments", {}).get("nodes", [])
             ],
             assignee=User.from_dict(issue["assignee"]) if has_assignee else None,
+            attachments=[
+                Attachment.from_dict(attachment)
+                for attachment in issue.get("attachments", {}).get("nodes", [])
+            ],
         )
 
 
@@ -308,6 +332,13 @@ def get_issue(id: str) -> Issue:
                       name
                       type
                     }
+                }
+            }
+            attachments {
+                nodes {
+                    id
+                    url
+                    title
                 }
             }
         }
