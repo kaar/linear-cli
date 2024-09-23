@@ -195,6 +195,15 @@ def issue_text(issue: Issue):
                 comment_text += f"    {reply.body}\n\n"
         text += f"\n{comment_text}\n"
 
+    if issue.attachments:
+        links_text = "\n## Links\n"
+        for attachment in issue.attachments:
+            links_text += f"* [{attachment.title}]({attachment.url})\n"
+            # url = f"{Fore.GREEN}" f"{attachment.url}" f"{Style.RESET_ALL}"
+            # links_text += f"{url}\n"
+
+        text += f"{links_text}\n"
+
     url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
     text += f"{url}\n"
 
