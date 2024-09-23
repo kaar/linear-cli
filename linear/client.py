@@ -85,7 +85,7 @@ class Comment:
 class Attachment:
     """
     Links to external resources attached to an issue like GitHub PRs or
-    Slack threads.
+    Slack threads. Shown as links in the Linear UI.
     """
     id: str
     title: str
