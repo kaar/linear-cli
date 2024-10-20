@@ -225,94 +225,94 @@ def gql_request(query: str) -> dict:
 
 
 def get_team(team_id: str) -> Team:
-    query = """
-    query Team {
-        team(id: "%s") {
+    query = f"""
+    query Team {{
+        team(id: "{team_id}") {{
             id
             name
-            issues {
-                nodes {
+            issues {{
+                nodes {{
                     id
                     identifier
                     title
                     createdAt
                     description
                     url
-                    assignee {
+                    assignee {{
                         id
                         name
                         email
-                    }
-                    state {
+                    }}
+                    state {{
                         id
                         name
                         type
-                    }
-                }
-            }
-        }
-    }
-    """ % (team_id)
+                    }}
+                }}
+            }}
+        }}
+    }}
+    """
     gql_data = gql_request(query)["data"]
     return Team.from_dict(gql_data)
 
 
 def get_issue(id: str) -> Issue:
-    query = """
-    query Issue {
-      issue(id: "%s") {
+    query = f"""
+    query Issue {{
+        issue(id: "{id}") {{
             id
             identifier
             title
             createdAt
             description
             url
-            assignee {
+            assignee {{
                 id
                 name
                 email
-            }
-            state {
-              id
-              name
-              type
-            }
-            comments {
-                nodes {
+            }}
+            state {{
+                id
+                name
+                type
+            }}
+            comments {{
+                nodes {{
                     id
                     body
                     createdAt
-                    user {
+                    user {{
                         name
-                    }
-                    parent {
+                    }}
+                    parent {{
                         id
-                    }
-                }
-            }
-            children {
-                nodes {
+                    }}
+                }}
+            }}
+            children {{
+                nodes {{
                     id
                     identifier
                     title
                     createdAt
                     description
                     url
-                    assignee {
+                    assignee {{
                         id
                         name
                         email
-                    }
-                    state {
-                      id
-                      name
-                      type
-                    }
-                }
-            }
-        }
-    }
-    """ % (id)
+                    }}
+                    state {{
+                        id
+                        name
+                        type
+                    }}
+                }}
+            }}
+        }}
+    }}
+    """
     data = gql_request(query)
     return Issue.from_dict(data["data"]["issue"])
 
