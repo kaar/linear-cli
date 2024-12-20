@@ -31,4 +31,4 @@ jobs:
       - name: Run Ruff
         run: uv run ruff check --output-format=github .
       - name: Run Format
-        run: uv run ruff ruff format --diff
+        run: uv run ruff format --diff
