@@ -141,7 +141,7 @@ def title_text(issue: Issue):
     }[issue.state.type]
 
     status = f"{status_color}{issue.state.name}{Style.RESET_ALL}"
-    title = f"{issue.identifier} - {issue.title} ({status})"
+    title = f"{Fore.LIGHTCYAN_EX}{issue.identifier}{Style.RESET_ALL} - {issue.title} ({status})"
     if issue.assignee:
         title += f" ({Fore.MAGENTA}{issue.assignee.name}{Style.RESET_ALL})"
 
@@ -158,6 +158,8 @@ def description_text(description: str):
 
 def issue_text(issue: Issue):
     text = title_text(issue)
+    url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
+    text += f"<{url}>\n"
 
     if issue.description:
         text += description_text(issue.description)
@@ -195,8 +197,6 @@ def issue_text(issue: Issue):
                 comment_text += f"    {reply.body}\n\n"
         text += f"\n{comment_text}\n"
 
-    url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
-    text += f"{url}\n"
 
     return text
 
