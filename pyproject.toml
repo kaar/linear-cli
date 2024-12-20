@@ -21,6 +21,11 @@ li = "linear.cli:cli"
 [tool.pyright]
 venvPath = ".venv"
 
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.8.4",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
