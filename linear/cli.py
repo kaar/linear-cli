@@ -7,7 +7,15 @@ from typing import Optional
 import click
 
 from . import console
-from .client import get_me, get_team, get_issue, ISSUE_STATES
+from .client import (
+    get_me,
+    get_team,
+    get_issue,
+    ISSUE_STATES,
+    get_triage_issues,
+    get_custom_views,
+    get_favorites,
+)
 
 LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LOGGER = logging.getLogger(__name__)
@@ -168,6 +176,28 @@ def cmd_ls(state: str, json: bool):
     console.print_issues(issues, format)
 
 
+@click.command("triage")
+@click.option("--json", is_flag=True)
+def cmd_triage(json: bool):
+    """
+    List linear issues that are in triage for the different "projects"/"grouping"
+    """
+    me = get_me()
+    if not me.teams:
+        LOGGER.error("You are not a member of any teams")
+        sys.exit(1)
+
+    triage_issues = [
+        issue
+        for team in me.teams
+        for issue in get_team(team.id).issues
+        if issue.state.type == "triage"
+    ]
+
+    for issue in triage_issues:
+        console.print_issue(issue, "json" if json else "markdown")
+
+
 @click.group()
 def cli():
     setup_logging()
@@ -177,5 +207,6 @@ cli.add_command(cmd_issue)
 cli.add_command(cmd_team)
 cli.add_command(cmd_me)
 cli.add_command(cmd_ls)
+cli.add_command(cmd_triage)
 if __name__ == "__main__":
     cli()
