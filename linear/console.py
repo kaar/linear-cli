@@ -158,7 +158,7 @@ def description_text(description: str):
 
 def issue_text(issue: Issue):
     text = title_text(issue)
-    url = f"{Fore.GREEN}" f"{issue.url}" f"{Style.RESET_ALL}"
+    url = f"{Fore.GREEN}{issue.url}{Style.RESET_ALL}"
     text += f"<{url}>\n"
 
     if issue.description:
@@ -196,7 +196,6 @@ def issue_text(issue: Issue):
                 # TODO: Indent the whole reply by 4 spaces
                 comment_text += f"    {reply.body}\n\n"
         text += f"\n{comment_text}\n"
-
 
     return text
 
