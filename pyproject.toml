@@ -6,6 +6,7 @@ authors = [{ name="Caspar Nettelbladt", email="caspar.n@gmail.com" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.12"
+package = "linear"
 dependencies = [
     "requests>=2.32.3",
     "colorama>=0.4.6",
@@ -13,18 +14,21 @@ dependencies = [
     "click>=8.1.7",
     "tabulate>=0.9.0",
 ]
-package = "linear"
+
+[dependency-groups]
+dev = [
+  "ruff>=0.8.4",
+  "pyright>=1.1.386",
+  "pytest>=8.3.3",
+  "pytest-asyncio>=0.24.0",
+  "coverage>=7.6.4",
+]
 
 [project.scripts]
 li = "linear.cli:cli"
 
 [tool.pyright]
 venvPath = ".venv"
-
-[tool.uv]
-dev-dependencies = [
-    "ruff>=0.8.4",
-]
 
 [build-system]
 requires = ["hatchling"]

@@ -26,9 +26,9 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: make install
       # https://docs.astral.sh/ruff/integrations
-      - name: Run Ruff
-        run: uv run ruff check --output-format=github .
+      - name: Run Check
+        run: make check
       - name: Run Format
-        run: uv run ruff format --diff
+        run: make format

@@ -9,15 +9,17 @@ pipx-uninstall:
 	pipx uninstall linear
 .PHONY: pipx-uninstall
 
-test:
-	poetry run pytest linear
-.PHONY: test
-
 clean: pipx-uninstall
 .PHONY: clean
 
-build: clean
-	poetry build
+install:
+	uv sync --all-extras --dev
+.PHONY: install
 
-release: build test
-	gh release create v$(VERSION) --generate-notes
+check:
+	uv run ruff check --output-format=github .
+.PHONY: check
+
+format:
+	uv run ruff format --diff
+.PHONY: format
