@@ -197,7 +197,6 @@ def issue_text(issue: Issue):
                 comment_text += f"    {reply.body}\n\n"
         text += f"\n{comment_text}\n"
 
-
     return text
 
 
