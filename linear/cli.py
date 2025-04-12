@@ -83,8 +83,18 @@ def cmd_issue_list(state: str, json: bool):
     console.print_issues(issues, format)
 
 
+def complete_issue_id(ctx, param, incomplete):
+    me = get_me()
+    issue_states = ["backlog", "started", "unstarted"]
+    return [
+        issue.identifier
+        for issue in me.assigned_issues
+        if issue.state.type in issue_states and issue.identifier.startswith(incomplete)
+    ]
+
+
 @cmd_issue.command("view")
-@click.argument("issue_id", type=str)
+@click.argument("issue_id", type=str, shell_complete=complete_issue_id)
 @click.option("--web", is_flag=True)
 @click.option("--json", is_flag=True)
 def cmd_issue_view(issue_id: str, web: bool, json: bool):
