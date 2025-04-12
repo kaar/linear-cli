@@ -62,6 +62,35 @@ def cmd_issue():
     """
 
 
+@cmd_issue.command("create")
+@click.option("--title", type=str)
+@click.option("--description", type=str, default=None)
+@click.option("--team-id", type=str, default=None)
+@click.option("--label-id", type=str, multiple=True)
+@click.option("--assignee-id", type=str, default=None)
+@click.option("--json", is_flag=True)
+def cmd_issue_create(
+    title: str,
+    description: Optional[str],
+    team_id: Optional[str],
+    label_id: Optional[str],
+    assignee_id: Optional[str],
+    json: bool,
+):
+    """
+    linear issue create <title> [--description <description>]
+    """
+    issue = get_me().create_issue(
+        title=title,
+        description=description,
+        team_id=team_id,
+        label_id=label_id,
+        assignee_id=assignee_id,
+    )
+    format = "json" if json else "markdown"
+    console.print_issue(issue, format)
+
+
 @cmd_issue.command("list")
 @click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
 @click.option("--json", is_flag=True)
