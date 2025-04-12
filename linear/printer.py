@@ -13,6 +13,8 @@ from tabulate import tabulate
 
 colorama.init()
 
+Format = Literal["markdown", "text", "json", "table"]
+
 
 class DataclassJsonEncoder(json.JSONEncoder):
     def default(self, o):
@@ -23,50 +25,55 @@ class DataclassJsonEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def print_me(me, issues: list[Issue], format):
-    if format == "json":
-        print(json.dumps(issues, cls=DataclassJsonEncoder))
-        return
-    if format == "markdown":
-        print(me_markdown(me, issues))
-        return
+class LinearPrinter:
+    def __init__(self, format: Format = "markdown"):
+        self._format = format
 
+    def print_me(
+        self,
+        me,
+        issues: list[Issue],
+    ):
+        match self._format:
+            case "json":
+                print(json.dumps(issues, cls=DataclassJsonEncoder))
+                return
+            case "table":
+                print(issues_table(issues))
+                return
+            case "markdown":
+                print(me_markdown(me, issues))
+                return
 
-def print_issues(
-    issues: list[Issue],
-    format: Literal[
-        "json",
-        "table",
-        "markdown",
-    ] = "markdown",
-):
-    if format == "json":
-        print(json.dumps(issues, cls=DataclassJsonEncoder))
-        return
-    if format == "table":
-        print(issues_table(issues))
-        return
-    if format == "markdown":
-        print(issues_markdown(issues))
-        return
+    def print_issues(
+        self,
+        issues: list[Issue],
+    ):
+        match self._format:
+            case "json":
+                print(json.dumps(issues, cls=DataclassJsonEncoder))
+                return
+            case "table":
+                print(issues_table(issues))
+                return
+            case "markdown":
+                print(issues_markdown(issues))
+                return
 
-
-def print_issue(
-    issue: Issue,
-    format: Literal[
-        "json",
-        "table",
-        "markdown",
-    ] = "markdown",
-):
-    if format == "json":
-        print(json.dumps(issue, cls=DataclassJsonEncoder))
-        return
-    if format == "table":
-        print(issue_table(issue))
-        return
-    if format == "markdown":
-        print(issue_markdown(issue), end="")
+    def print_issue(
+        self,
+        issue: Issue,
+    ):
+        match self._format:
+            case "json":
+                print(json.dumps(issue, cls=DataclassJsonEncoder))
+                return
+            case "table":
+                print(issue_table(issue))
+                return
+            case "markdown":
+                print(issue_markdown(issue), end="")
+                return
 
 
 def issue_markdown(issue: Issue):
