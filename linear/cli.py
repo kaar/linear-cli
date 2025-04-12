@@ -7,10 +7,15 @@ from typing import Optional
 import click
 
 from . import console
-from .client import get_me, get_team, get_issue, ISSUE_STATES
+from .cache import XDGCache
+from .client import ISSUE_STATES, LinearClient
 
-LINEAR_API_KEY = os.environ["LINEAR_API_KEY"]
 LOGGER = logging.getLogger(__name__)
+LINEAR_CLIENT = LinearClient(
+    url="https://api.linear.app/graphql",
+    api_key=os.environ["LINEAR_API_KEY"],
+    cache=XDGCache(app_name="linear"),
+)
 
 
 def setup_logging():
@@ -32,7 +37,7 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
     """
     linear team
     """
-    me = get_me()
+    me = LINEAR_CLIENT.get_me()
     if not me.teams:
         LOGGER.error("You are not a member of any teams")
         sys.exit(1)
@@ -40,7 +45,7 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
     issue_states = [state] if state else ISSUE_STATES
 
     for team in me.teams:
-        team_issues = get_team(team.id).issues
+        team_issues = LINEAR_CLIENT.get_team(team.id).issues
         issues = sorted(
             [issue for issue in team_issues if issue.state.type in issue_states],
             key=lambda issue: issue.state.name,
@@ -64,7 +69,7 @@ def cmd_issue_list(state: str, json: bool):
     List linear issues assigned to you
     """
     issue_states = [state] if state else ["backlog", "started", "unstarted"]
-    me = get_me()
+    me = LINEAR_CLIENT.get_me()
 
     if me.assigned_issues is None:
         # print("No issues assigned to you")
@@ -73,7 +78,7 @@ def cmd_issue_list(state: str, json: bool):
     issues = sorted(
         [
             # I need to fetch the issue to be able to load sub issues
-            get_issue(issue.id)
+            LINEAR_CLIENT.get_issue(issue.id)
             for issue in me.assigned_issues
             if issue.state.type in issue_states
         ],
@@ -84,7 +89,7 @@ def cmd_issue_list(state: str, json: bool):
 
 
 def complete_issue_id(ctx, param, incomplete):
-    me = get_me()
+    me = LINEAR_CLIENT.get_me()
     issue_states = ["backlog", "started", "unstarted"]
     return [
         issue.identifier
@@ -115,7 +120,7 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
 
     issue_id = get_issue_id(issue_id)
 
-    issue = get_issue(issue_id)
+    issue = LINEAR_CLIENT.get_issue(issue_id)
     if web:
         webbrowser.open(issue.url)
         return
@@ -132,7 +137,7 @@ def cmd_me(state: str, json: bool):
     List linear issues assigned to you
     """
     issue_states = [state] if state else ["backlog", "started", "unstarted"]
-    me = get_me()
+    me = LINEAR_CLIENT.get_me()
 
     if me.assigned_issues is None:
         # print("No issues assigned to you")
@@ -141,7 +146,7 @@ def cmd_me(state: str, json: bool):
     issues = sorted(
         [
             # I need to fetch the issue to be able to load sub issues
-            get_issue(issue.id)
+            LINEAR_CLIENT.get_issue(issue.id)
             for issue in me.assigned_issues
             if issue.state.type in issue_states
         ],
@@ -159,7 +164,7 @@ def cmd_ls(state: str, json: bool):
     List linear issues assigned to you
     """
     issue_states = [state] if state else ["backlog", "started", "unstarted"]
-    me = get_me()
+    me = LINEAR_CLIENT.get_me()
 
     if me.assigned_issues is None:
         # print("No issues assigned to you")
@@ -168,7 +173,7 @@ def cmd_ls(state: str, json: bool):
     issues = sorted(
         [
             # I need to fetch the issue to be able to load sub issues
-            get_issue(issue.id)
+            LINEAR_CLIENT.get_issue(issue.id)
             for issue in me.assigned_issues
             if issue.state.type in issue_states
         ],
