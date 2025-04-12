@@ -9,11 +9,10 @@ from colorama import Fore, Style
 
 from . import highlight
 from .client import Issue
-from tabulate import tabulate
 
 colorama.init()
 
-Format = Literal["markdown", "text", "json", "table"]
+Format = Literal["markdown", "text", "json"]
 
 
 class DataclassJsonEncoder(json.JSONEncoder):
@@ -38,9 +37,6 @@ class LinearPrinter:
             case "json":
                 print(json.dumps(issues, cls=DataclassJsonEncoder))
                 return
-            case "table":
-                print(issues_table(issues))
-                return
             case "markdown":
                 print(me_markdown(me, issues))
                 return
@@ -53,9 +49,6 @@ class LinearPrinter:
             case "json":
                 print(json.dumps(issues, cls=DataclassJsonEncoder))
                 return
-            case "table":
-                print(issues_table(issues))
-                return
             case "markdown":
                 print(issues_markdown(issues))
                 return
@@ -67,9 +60,6 @@ class LinearPrinter:
         match self._format:
             case "json":
                 print(json.dumps(issue, cls=DataclassJsonEncoder))
-                return
-            case "table":
-                print(issue_table(issue))
                 return
             case "markdown":
                 print(issue_markdown(issue), end="")
@@ -110,31 +100,6 @@ def issues_markdown(issues: list[Issue]):
             text += f"  {title_text(subissue)}"
 
     print(text, end="")
-
-
-def issue_table(issue: Issue):
-    data = {
-        "ID": issue.identifier,
-        "Title": issue.title,
-        "State": issue.state.name,
-        "Assignee": issue.assignee.name if issue.assignee else "Unassigned",
-        "Description": issue.description,
-    }
-    return tabulate(data.items())
-
-
-def issues_table(issues: list[Issue]):
-    data = [
-        [
-            issue.identifier,
-            issue.title,
-            issue.state.name,
-            issue.assignee.name if issue.assignee else "Unassigned",
-        ]
-        for issue in issues
-    ]
-    headers = ["ID", "Title", "State", "Assignee"]
-    return tabulate(data, headers=headers)
 
 
 def title_text(issue: Issue):

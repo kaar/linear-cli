@@ -31,9 +31,8 @@ def setup_logging():
 
 @click.command("team")
 @click.option("--json", is_flag=True)
-@click.option("--table", is_flag=True)
 @click.option("--state", type=click.Choice(ISSUE_STATES), default=None)
-def cmd_team(state: Optional[str], json: bool, table: bool):
+def cmd_team(state: Optional[str], json: bool):
     """
     linear team
     """
@@ -51,7 +50,7 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
             key=lambda issue: issue.state.name,
         )
         printer = LinearPrinter(
-            format="json" if json else "table" if table else "markdown",
+            format="json" if json else "markdown",
         )
         printer.print_issues(issues)
 
@@ -128,8 +127,7 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
         webbrowser.open(issue.url)
         return
 
-    format = "json" if json else "markdown"
-    printer = LinearPrinter(format=format)
+    printer = LinearPrinter(format="json" if json else "markdown")
     printer.print_issue(issue)
 
 
@@ -156,8 +154,7 @@ def cmd_me(state: str, json: bool):
         ],
         key=lambda issue: issue.state.name,
     )
-    format = "json" if json else "markdown"
-    printer = LinearPrinter(format=format)
+    printer = LinearPrinter(format="json" if json else "markdown")
     printer.print_me(me, issues)
 
 
@@ -184,8 +181,7 @@ def cmd_ls(state: str, json: bool):
         ],
         key=lambda issue: issue.state.name,
     )
-    format = "json" if json else "markdown"
-    printer = LinearPrinter(format=format)
+    printer = LinearPrinter(format="json" if json else "markdown")
     printer.print_issues(issues)
 
 
