@@ -50,7 +50,7 @@ class LinearPrinter:
                 print(json.dumps(issues, cls=DataclassJsonEncoder))
                 return
             case "markdown":
-                print(issues_markdown(issues))
+                print(issues_markdown(issues), end="")
                 return
 
     def print_issue(
@@ -99,7 +99,7 @@ def issues_markdown(issues: list[Issue]):
         for subissue in sub_issues:
             text += f"  {title_text(subissue)}"
 
-    print(text, end="")
+    return text
 
 
 def title_text(issue: Issue):
