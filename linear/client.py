@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
@@ -51,7 +52,7 @@ class WorkflowState:
     type: str
 
     @classmethod
-    def from_dict(cls, state: dict) -> "WorkflowState":
+    def from_dict(cls, state: dict) -> WorkflowState:
         return cls(
             id=state["id"],
             name=state["name"],
@@ -79,6 +80,28 @@ class Comment:
 
 
 @dataclass
+class Attachment:
+    """
+    External resources attached to an issue like GitHub PRs or Slack threads.
+    Shown as links in the Linear UI.
+    """
+
+    id: str
+    title: str
+    url: str
+    source_type: str
+
+    @classmethod
+    def from_dict(cls, attachment: dict) -> "Attachment":
+        return cls(
+            id=attachment["id"],
+            title=attachment["title"],
+            url=attachment["url"],
+            source_type=attachment["sourceType"],
+        )
+
+
+@dataclass
 class Issue:
     id: str
     identifier: str
@@ -89,12 +112,13 @@ class Issue:
     created_at: str
     url: str
     state: WorkflowState
-    children: list["Issue"]
-    comments: Optional[list["Comment"]]
-    assignee: Optional["User"] = None
+    children: list[Issue]
+    comments: Optional[list[Comment]]
+    assignee: Optional[User] = None
+    attachments: Optional[list[Attachment]] = None
 
     @classmethod
-    def from_dict(cls, issue: dict) -> "Issue":
+    def from_dict(cls, issue: dict) -> Issue:
         has_children = "children" in issue
         has_assignee = "assignee" in issue and issue["assignee"] is not None
         return cls(
@@ -115,6 +139,10 @@ class Issue:
                 for comment in issue.get("comments", {}).get("nodes", [])
             ],
             assignee=User.from_dict(issue["assignee"]) if has_assignee else None,
+            attachments=[
+                Attachment.from_dict(attachment)
+                for attachment in issue.get("attachments", {}).get("nodes", [])
+            ],
         )
 
 
@@ -125,7 +153,7 @@ class Team:
     issues: list[Issue]
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Team":
+    def from_dict(cls, data: dict) -> Team:
         team = data["team"]
         issues = team.get("issues", {}).get("nodes", [])
         return cls(
@@ -146,7 +174,7 @@ class User:
     """Issues assigned to the user."""
 
     @classmethod
-    def from_dict(cls, user: dict) -> "User":
+    def from_dict(cls, user: dict) -> User:
         has_assigned_issues = "assignedIssues" in user
         has_teams = "teamMemberships" in user
         return cls(
@@ -245,6 +273,14 @@ class LinearClient:
                         parent {{
                             id
                         }}
+                    }}
+                }}
+                attachments {{
+                    nodes {{
+                        id
+                        title
+                        url
+                        sourceType
                     }}
                 }}
                 children {{
