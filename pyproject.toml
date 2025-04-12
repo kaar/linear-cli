@@ -28,7 +28,8 @@ dev = [
 li = "linear.cli:cli"
 
 [tool.pyright]
-venvPath = ".venv"
+venvPath = "."
+venv = ".venv"
 
 [build-system]
 requires = ["hatchling"]
