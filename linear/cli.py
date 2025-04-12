@@ -6,9 +6,9 @@ from typing import Optional
 
 import click
 
-from . import console
 from .cache import XDGCache
 from .client import ISSUE_STATES, LinearClient
+from .printer import LinearPrinter
 
 LOGGER = logging.getLogger(__name__)
 LINEAR_CLIENT = LinearClient(
@@ -50,8 +50,10 @@ def cmd_team(state: Optional[str], json: bool, table: bool):
             [issue for issue in team_issues if issue.state.type in issue_states],
             key=lambda issue: issue.state.name,
         )
-        format = "json" if json else "table" if table else "markdown"
-        console.print_issues(issues, format)
+        printer = LinearPrinter(
+            format="json" if json else "table" if table else "markdown",
+        )
+        printer.print_issues(issues)
 
 
 @click.group("issue")
@@ -85,7 +87,8 @@ def cmd_issue_list(state: str, json: bool):
         key=lambda issue: issue.state.name,
     )
     format = "json" if json else "markdown"
-    console.print_issues(issues, format)
+    printer = LinearPrinter(format=format)
+    printer.print_issues(issues)
 
 
 def complete_issue_id(ctx, param, incomplete):
@@ -126,7 +129,8 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
         return
 
     format = "json" if json else "markdown"
-    console.print_issue(issue, format)
+    printer = LinearPrinter(format=format)
+    printer.print_issue(issue)
 
 
 @click.command("me")
@@ -153,7 +157,8 @@ def cmd_me(state: str, json: bool):
         key=lambda issue: issue.state.name,
     )
     format = "json" if json else "markdown"
-    console.print_me(me, issues, format)
+    printer = LinearPrinter(format=format)
+    printer.print_me(me, issues)
 
 
 @click.command("ls")
@@ -180,7 +185,8 @@ def cmd_ls(state: str, json: bool):
         key=lambda issue: issue.state.name,
     )
     format = "json" if json else "markdown"
-    console.print_issues(issues, format)
+    printer = LinearPrinter(format=format)
+    printer.print_issues(issues)
 
 
 @click.group()
