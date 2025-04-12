@@ -11,6 +11,12 @@ https://linear.app/tibber/settings/api
 pipx install git+https://github.com/kaar/linear-cli
 ```
 
+## Completion
+
+```sh
+eval "$(_LI_COMPLETE=bash_source li)"
+```
+
 ## Usage
 
 ```bash
