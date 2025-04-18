@@ -8,7 +8,7 @@ import colorama
 from colorama import Fore, Style
 
 from . import highlight
-from .client import Issue
+from .client import Issue, User
 
 colorama.init()
 
@@ -30,7 +30,7 @@ class LinearPrinter:
 
     def print_me(
         self,
-        me,
+        me: User,
         issues: list[Issue],
     ):
         match self._format:
@@ -67,7 +67,71 @@ class LinearPrinter:
 
 
 def issue_markdown(issue: Issue):
-    return issue_text(issue)
+    text = title_text(issue)
+    url = f"{Fore.GREEN}{issue.url}{Style.RESET_ALL}"
+    text += f"<{url}>\n"
+
+    if issue.description:
+        text += description_text(issue.description)
+
+    if show_subissues := issue.children:
+        text += "Sub-issues:\n"
+        # print("Sub-issues:")
+        for subissue in show_subissues:
+            subissue_text = subissue_as_formatted_text(subissue)
+            text += subissue_text
+
+    if issue.comments:
+        comment_text = "## Comments\n"
+        comments = sorted(issue.comments, key=lambda x: x.created_at)
+        for comment in comments:
+            # Skip replies
+            if comment.parent_id:
+                continue
+            comment_text += (
+                f"{Fore.BLUE}"
+                f"@{comment.user_name}{date_format(comment.created_at)}"
+                f"{Style.RESET_ALL}\n"
+            )
+            comment_text += f"{highlight.markdown(comment.body)}\n"
+            replies = [
+                reply for reply in issue.comments if reply.parent_id == comment.id
+            ]
+            for reply in replies:
+                comment_text += (
+                    f"{Fore.LIGHTBLUE_EX}"
+                    f"@{reply.user_name}{date_format(reply.created_at)}"
+                    f"{Style.RESET_ALL}\n"
+                )
+                # TODO: Indent the whole reply by 4 spaces
+                comment_text += f"    {reply.body}\n\n"
+        text += f"\n{highlight.markdown(comment_text)}\n"
+
+    # TODO: I don't like how it looks but it works
+    if issue.attachments:
+        github_attachments = [
+            attachment
+            for attachment in issue.attachments
+            if attachment.source_type == "github"
+        ]
+        if github_attachments:
+            github_text_section = "## Pull Requests\n"
+            for attachment in github_attachments:
+                github_text_section += f"* [{attachment.title}]({attachment.url})\n"
+            text += highlight.markdown(github_text_section)
+
+        slack_attachments = [
+            attachment
+            for attachment in issue.attachments
+            if attachment.source_type == "slack"
+        ]
+        if slack_attachments:
+            slack_text_section = "## Slack\n"
+            for attachment in slack_attachments:
+                slack_text_section += f"* [{attachment.title}]({attachment.url})\n"
+            text += highlight.markdown(slack_text_section)
+
+    return text
 
 
 def me_markdown(_, issues: list[Issue]):
@@ -126,50 +190,6 @@ def description_text(description: str):
     description = description.replace("\n\\", "\n")
     formatted_description = highlight.markdown(description)
     return f"\n{formatted_description}"
-
-
-def issue_text(issue: Issue):
-    text = title_text(issue)
-    url = f"{Fore.GREEN}{issue.url}{Style.RESET_ALL}"
-    text += f"<{url}>\n"
-
-    if issue.description:
-        text += description_text(issue.description)
-
-    if show_subissues := issue.children:
-        text += "Sub-issues:\n"
-        # print("Sub-issues:")
-        for subissue in show_subissues:
-            subissue_text = subissue_as_formatted_text(subissue)
-            text += subissue_text
-
-    if issue.comments:
-        comment_text = "\n"
-        comments = sorted(issue.comments, key=lambda x: x.created_at)
-        for comment in comments:
-            # Skip replies
-            if comment.parent_id:
-                continue
-            comment_text += (
-                f"{Fore.BLUE}"
-                f"@{comment.user_name}{date_format(comment.created_at)}"
-                f"{Style.RESET_ALL}\n"
-            )
-            comment_text += f"{highlight.markdown(comment.body)}\n"
-            replies = [
-                reply for reply in issue.comments if reply.parent_id == comment.id
-            ]
-            for reply in replies:
-                comment_text += (
-                    f"{Fore.LIGHTBLUE_EX}"
-                    f"@{reply.user_name}{date_format(reply.created_at)}"
-                    f"{Style.RESET_ALL}\n"
-                )
-                # TODO: Indent the whole reply by 4 spaces
-                comment_text += f"    {reply.body}\n\n"
-        text += f"\n{comment_text}\n"
-
-    return text
 
 
 def wrap_preserve_newlines(text, width=120, break_long_words=False):
