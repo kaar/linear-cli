@@ -242,106 +242,106 @@ class LinearClient:
         data = self._gql_request(query)
         return User.from_dict(data["data"]["viewer"])
 
-    def get_issue(self, id: str) -> Issue:
-        query = f"""
-        query Issue {{
-            issue(id: "{id}") {{
+    def get_issue(self, issue_id: str) -> Issue:
+        query = """
+        query GetIssue($issue_id: String!) {
+            issue(id: $issue_id) {
                 id
                 identifier
                 title
                 createdAt
                 description
                 url
-                assignee {{
+                assignee {
                     id
                     name
                     email
-                }}
-                state {{
+                }
+                state {
                     id
                     name
                     type
-                }}
-                comments {{
-                    nodes {{
+                }
+                comments {
+                    nodes {
                         id
                         body
                         createdAt
-                        user {{
+                        user {
                             name
-                        }}
-                        parent {{
+                        }
+                        parent {
                             id
-                        }}
-                    }}
-                }}
-                attachments {{
-                    nodes {{
+                        }
+                    }
+                }
+                attachments {
+                    nodes {
                         id
                         title
                         url
                         sourceType
-                    }}
-                }}
-                children {{
-                    nodes {{
+                    }
+                }
+                children {
+                    nodes {
                         id
                         identifier
                         title
                         createdAt
                         description
                         url
-                        assignee {{
+                        assignee {
                             id
                             name
                             email
-                        }}
-                        state {{
+                        }
+                        state {
                             id
                             name
                             type
-                        }}
-                    }}
-                }}
-            }}
-        }}
+                        }
+                    }
+                }
+            }
+        }
         """
-        data = self._gql_request(query)
+        data = self._gql_request(query, issue_id=issue_id)
         return Issue.from_dict(data["data"]["issue"])
 
     def get_team(self, team_id: str) -> Team:
-        query = f"""
-        query Team {{
-            team(id: "{team_id}") {{
+        query = """
+        query GetTeam($team_id: String!) {
+            team(id: $team_id) {
                 id
                 name
-                issues {{
-                    nodes {{
+                issues {
+                    nodes {
                         id
                         identifier
                         title
                         createdAt
                         description
                         url
-                        assignee {{
+                        assignee {
                             id
                             name
                             email
-                        }}
-                        state {{
+                        }
+                        state {
                             id
                             name
                             type
-                        }}
-                    }}
-                }}
-            }}
-        }}
+                        }
+                    }
+                }
+            }
+        }
         """
-        gql_data = self._gql_request(query)["data"]
+        gql_data = self._gql_request(query, team_id=team_id)["data"]
         return Team.from_dict(gql_data)
 
-    def _gql_request(self, query: str) -> dict:
+    def _gql_request(self, query: str, **variables) -> dict:
         """
         Send a GraphQL query to Linear and return the response as a dictionary.
         Args:
@@ -356,7 +356,7 @@ class LinearClient:
         response = self._session.post(
             self._base_url,
             headers={"Authorization": self._api_key},
-            json={"query": query},
+            json={"query": query, "variables": variables},
         )
         data = response.json()
         if "errors" in data:
