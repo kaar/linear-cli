@@ -102,6 +102,21 @@ class Attachment:
 
 
 @dataclass
+class Label:
+    id: str
+    name: str
+    color: str
+
+    @classmethod
+    def from_dict(cls, label: dict) -> "Label":
+        return cls(
+            id=label["id"],
+            name=label["name"],
+            color=label["color"],
+        )
+
+
+@dataclass
 class Issue:
     id: str
     identifier: str
@@ -116,6 +131,7 @@ class Issue:
     comments: Optional[list[Comment]]
     assignee: Optional[User] = None
     attachments: Optional[list[Attachment]] = None
+    labels: Optional[list[Label]] = None
 
     @classmethod
     def from_dict(cls, issue: dict) -> Issue:
@@ -143,6 +159,10 @@ class Issue:
                 Attachment.from_dict(attachment)
                 for attachment in issue.get("attachments", {}).get("nodes", [])
             ],
+            labels=[
+                Label.from_dict(label)
+                for label in issue.get("labels", {}).get("nodes", [])
+            ] if "labels" in issue else None,
         )
 
 
@@ -234,6 +254,13 @@ class LinearClient:
                           name
                           type
                         }
+                        labels {
+                          nodes {
+                            id
+                            name
+                            color
+                          }
+                        }
                     }
                 }
             }
@@ -283,6 +310,13 @@ class LinearClient:
                         sourceType
                     }
                 }
+                labels {
+                  nodes {
+                    id
+                    name
+                    color
+                  }
+                }
                 children {
                     nodes {
                         id
@@ -300,6 +334,13 @@ class LinearClient:
                             id
                             name
                             type
+                        }
+                        labels {
+                          nodes {
+                            id
+                            name
+                            color
+                          }
                         }
                     }
                 }
@@ -332,6 +373,13 @@ class LinearClient:
                             id
                             name
                             type
+                        }
+                        labels {
+                          nodes {
+                            id
+                            name
+                            color
+                          }
                         }
                     }
                 }
