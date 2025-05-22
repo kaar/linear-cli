@@ -181,6 +181,15 @@ def title_text(issue: Issue):
     if issue.assignee:
         title += f" ({Fore.MAGENTA}{issue.assignee.name}{Style.RESET_ALL})"
 
+    # Show labels if present
+    if issue.labels:
+        label_strs = [
+            f"{Style.BRIGHT}{Fore.WHITE if not label.color else ''}[{label.name}]{Style.RESET_ALL}"
+            for label in issue.labels
+        ]
+        if label_strs:
+            title += " " + " ".join(label_strs)
+
     return f"{title}\n"
 
 
