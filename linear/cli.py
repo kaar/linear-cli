@@ -93,9 +93,11 @@ def cmd_issue_list(state: str, json: bool):
 def complete_issue_id(ctx, param, incomplete):
     me = LINEAR_CLIENT.get_me()
     issue_states = ["backlog", "started", "unstarted"]
+
+    assigned_issues = me.assigned_issues or []
     return [
         issue.identifier
-        for issue in me.assigned_issues
+        for issue in assigned_issues
         if issue.state.type in issue_states and issue.identifier.startswith(incomplete)
     ]
 
@@ -116,9 +118,9 @@ def cmd_issue_view(issue_id: str, web: bool, json: bool):
             # TODO: Validate url,
             # https://linear.app/linear-oss/issue/TRA-383/linear-cli
             # Validate issue id after parsing
-            return issue_id.split("/")[-2]
+            return issue.split("/")[-2]
         else:
-            return issue_id
+            return issue
 
     issue_id = get_issue_id(issue_id)
 

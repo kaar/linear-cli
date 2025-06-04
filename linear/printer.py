@@ -38,7 +38,7 @@ class LinearPrinter:
                 print(json.dumps(issues, cls=DataclassJsonEncoder))
                 return
             case "markdown":
-                print(me_markdown(me, issues))
+                print(me_markdown(me, issues), end="")
                 return
 
     def print_issues(
@@ -148,7 +148,7 @@ def me_markdown(_, issues: list[Issue]):
             text += f"  {title_text(subissue)}"
             text += description_text(subissue.description)
 
-    print(text, end="")
+    return text
 
 
 def issues_markdown(issues: list[Issue]):
